@@ -1,0 +1,15 @@
+{
+  "name": "course-node",
+  "version": "0.1.0",
+  "description": "Max Schwarzmueller's NodeJS Complete Guide",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
+  },
+  "author": "Bruno Parga",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^1.19.1"
+  }
+}
