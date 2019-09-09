@@ -9,7 +9,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 
 // App routes have been segregated into different files
-const adminRoutes = require('./routes/admin')
+const adminData = require('./routes/admin')
 const shopRoutes = require('./routes/shop')
 
 // =================
@@ -17,6 +17,10 @@ const shopRoutes = require('./routes/shop')
 
 // Main app object
 const app = express()
+// Configure templating engine
+app.set('view engine', 'pug')
+// Configure views folder (not needed, as this is the default)
+app.set('views', 'views')
 
 // All middleware functions
 
@@ -25,7 +29,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 // Serve static files, like CSS and browser JS
 app.use(express.static(path.join(__dirname, 'public')))
 // Prepend a path to these routes
-app.use('/admin', adminRoutes)
+app.use('/admin', adminData.routes)
 // But not these
 app.use(shopRoutes)
 // Fall back to sending a 404
