@@ -34,7 +34,7 @@ app.use('/admin', adminData.routes)
 app.use(shopRoutes)
 // Fall back to sending a 404
 app.use((req, res, next) => {
-  res.status(404).render('404')
+  res.status(404).render('404', { pageTitle: 'Page Not Found' })
 })
 
 // App listens on port 3000
