@@ -20,7 +20,11 @@ const shopRoutes = require('./routes/shop')
 // Main app object
 const app = express()
 // Configure templating engine
-app.engine('hbs', expressHbs())
+app.engine('hbs', expressHbs({
+  layoutsDir: 'views/layouts/',
+  defaultLayout: 'main-layout',
+  extname: 'hbs'
+}))
 app.set('view engine', 'hbs')
 // Configure views folder (not needed, as this is the default)
 app.set('views', 'views')
