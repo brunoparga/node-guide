@@ -7,27 +7,19 @@ const path = require('path')
 const express = require('express')
 // Parses the body of a POST request
 const bodyParser = require('body-parser')
-// Handlebars must be explicitly required
-const expressHbs = require('express-handlebars')
-
-// App routes have been segregated into different files
-const adminData = require('./routes/admin')
-const shopRoutes = require('./routes/shop')
 
 // =================
 // =================
 
 // Main app object
 const app = express()
-// Configure templating engine
-app.engine('hbs', expressHbs({
-  layoutsDir: 'views/layouts/',
-  defaultLayout: 'main-layout',
-  extname: 'hbs'
-}))
-app.set('view engine', 'hbs')
+app.set('view engine', 'ejs')
 // Configure views folder (not needed, as this is the default)
 app.set('views', 'views')
+
+// App routes have been segregated into different files
+const adminData = require('./routes/admin')
+const shopRoutes = require('./routes/shop')
 
 // All middleware functions
 
