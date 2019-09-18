@@ -1,7 +1,5 @@
-const express = require('express')
+const router = require('express').Router()
 const productsController = require('../controllers/products')
-
-const router = express.Router()
 
 router.get('/', productsController.getProducts)
 
