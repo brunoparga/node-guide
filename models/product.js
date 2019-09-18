@@ -17,7 +17,7 @@ module.exports = class Product {
       }
       products.push(this)
       fs.writeFile(filePath, JSON.stringify(products), (err) => {
-        console.log(err)
+        if (err) { console.log(err) }
       })
     })
   }
