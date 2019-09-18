@@ -28,7 +28,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 // Serve static files, like CSS and browser JS
 app.use(express.static(path.join(__dirname, 'public')))
 // Prepend a path to these routes
-app.use('/admin', adminData.routes)
+app.use('/admin', adminData)
 // But not these
 app.use(shopRoutes)
 // Fall back to sending a 404
