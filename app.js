@@ -18,8 +18,9 @@ app.set('view engine', 'ejs')
 app.set('views', 'views')
 
 // App routes have been segregated into different files
-const adminData = require('./routes/admin')
+const adminRouter = require('./routes/admin')
 const shopRoutes = require('./routes/shop')
+const pagesController = require('./controllers/pages')
 
 // All middleware functions
 
@@ -28,13 +29,11 @@ app.use(bodyParser.urlencoded({ extended: true }))
 // Serve static files, like CSS and browser JS
 app.use(express.static(path.join(__dirname, 'public')))
 // Prepend a path to these routes
-app.use('/admin', adminData)
+app.use('/admin', adminRouter)
 // But not these
 app.use(shopRoutes)
 // Fall back to sending a 404
-app.use((req, res, next) => {
-  res.status(404).render('404', { pageTitle: 'Page Not Found', path: '404' })
-})
+app.use(pagesController.get404)
 
 // App listens on port 3000
 app.listen(3000)
