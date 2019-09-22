@@ -4,7 +4,7 @@ exports.getIndex = (_req, res) => {
   Product.fetchAll((products) => {
     res.render('shop/index', {
       prods: products,
-      pageTitle: 'Shop',
+      pageTitle: 'Index',
       path: '/',
     });
   });
