@@ -28,8 +28,7 @@ module.exports = class Product {
   save() {
     getProductFromFile((products) => {
       products.push(this);
-      console.log(JSON.stringify(products));
-      fs.writeFile(filePath, JSON.stringify(products));
+      fs.writeFile(filePath, JSON.stringify(products), () => { });
     });
   }
 
