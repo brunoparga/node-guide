@@ -21,6 +21,7 @@
   },
   "nodemonConfig": {
     "ignore": [
+      "data/cart.json",
       "data/products.json"
     ]
   }
