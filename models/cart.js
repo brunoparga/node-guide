@@ -11,11 +11,10 @@ module.exports = class Cart {
   // Either read an existing cart from file, or create an empty one.
   // Inputs are error from fileRead and contents of file; output is an object.
   static setCart(err, fileContent) {
-    let cart = { products: [], totalPrice: 0 };
-    if (!err) {
-      cart = JSON.parse(fileContent);
+    if (err) {
+      return { products: [], totalPrice: 0 };
     }
-    return cart;
+    return JSON.parse(fileContent);
   }
 
   // Increase quantity of product that already exists and is added anew to
@@ -59,6 +58,19 @@ module.exports = class Cart {
       const existingProduct = cart.products[existingProductIndex];
 
       cart = this.updateCart(cart, existingProduct, existingProductIndex, id, productPrice);
+      fs.writeFile(filePath, JSON.stringify(cart), () => { });
+    });
+  }
+
+  static deleteProduct(id, productPrice) {
+    fs.readFile(filePath, (err, fileContent) => {
+      if (err) {
+        return;
+      }
+      const cart = this.setCart(err, fileContent);
+      const product = cart.products.find((prod) => prod.id === id);
+      cart.totalPrice -= product.qty * productPrice;
+      cart.products = cart.products.filter((prod) => prod.id !== id);
       fs.writeFile(filePath, JSON.stringify(cart), () => { });
     });
   }
