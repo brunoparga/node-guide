@@ -62,6 +62,10 @@ module.exports = class Cart {
     });
   }
 
+  // Remove all items of a given product from the cart, writing the updated
+  // version to disk.
+  // Inputs are product id and price.
+  // Output is void.
   static deleteProduct(id, productPrice) {
     fs.readFile(filePath, (err, fileContent) => {
       if (err) {
@@ -74,4 +78,6 @@ module.exports = class Cart {
       fs.writeFile(filePath, JSON.stringify(cart), () => { });
     });
   }
+
+  // Retrieve all the products that are in the cart
 };
