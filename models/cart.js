@@ -80,4 +80,9 @@ module.exports = class Cart {
   }
 
   // Retrieve all the products that are in the cart
+  static getCart(cb) {
+    fs.readFile(filePath, (err, fileContent) => {
+      cb(this.setCart(err, fileContent));
+    });
+  }
 };
