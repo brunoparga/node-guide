@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const app = express();
 app.set('view engine', 'ejs');
 
+const sequelize = require('./helpers/database')
 const adminRouter = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 const pagesController = require('./controllers/pages');
@@ -20,4 +21,7 @@ app.use(shopRoutes);
 // Fall back to sending a 404
 app.use(pagesController.get404);
 
-app.listen(3000);
+sequelize.sync()
+  .then(() => {
+    app.listen(3000);
+  });
