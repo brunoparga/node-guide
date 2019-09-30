@@ -1,5 +1,5 @@
 const db = require('../helpers/database');
-const Cart = require('./cart');
+// const Cart = require('./cart');
 
 module.exports = class Product {
   constructor(id, title, imageURL, description, price) {
@@ -15,7 +15,7 @@ module.exports = class Product {
       VALUES (?, ?, ?, ?)`, [this.title, this.imageURL, this.description, this.price]);
   }
 
-  static deleteById(id) {
+  static deleteById() {
 
   }
 
@@ -24,6 +24,6 @@ module.exports = class Product {
   }
 
   static findById(id) {
-
+    return db.execute('SELECT * FROM products WHERE id = ?', [id]);
   }
 };
