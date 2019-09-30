@@ -3,10 +3,10 @@ const Cart = require('../models/cart');
 
 exports.getIndex = (_req, res) => {
   Product
-    .fetchAll()
-    .then(([result]) => {
+    .findAll()
+    .then((products) => {
       res.render('shop/index', {
-        prods: result,
+        prods: products,
         pageTitle: 'Index',
         path: '/',
       });
@@ -15,10 +15,10 @@ exports.getIndex = (_req, res) => {
 
 exports.getProducts = (_req, res) => {
   Product
-    .fetchAll()
-    .then(([result]) => {
+    .findAll()
+    .then((products) => {
       res.render('shop/product-list', {
-        prods: result,
+        prods: products,
         pageTitle: 'Shop',
         path: '/products',
       });
