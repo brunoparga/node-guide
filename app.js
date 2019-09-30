@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const app = express();
 app.set('view engine', 'ejs');
 
-const sequelize = require('./helpers/database')
+const sequelize = require('./helpers/database');
 const adminRouter = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 const pagesController = require('./controllers/pages');

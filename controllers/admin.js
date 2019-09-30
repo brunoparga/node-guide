@@ -9,14 +9,10 @@ exports.getAddProduct = (req, res) => {
 };
 
 exports.postAddProduct = (req, res) => {
-  const {
-    title, imageURL, description, price,
-  } = req.body;
-
-  const product = new Product(null, title, imageURL, description, price);
-  product
-    .save()
-    .then(() => res.redirect('/'));
+  Product.create(req.body)
+    .then(() => {
+      res.redirect('/');
+    });
 };
 
 exports.getEditProduct = (req, res) => {
