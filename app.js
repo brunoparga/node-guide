@@ -5,7 +5,12 @@ const bodyParser = require('body-parser');
 const app = express();
 app.set('view engine', 'ejs');
 
+// Import DB and models
 const sequelize = require('./helpers/database');
+const Product = require('./models/product');
+const User = require('./models/user');
+
+// Import routes
 const adminRouter = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 const pagesController = require('./controllers/pages');
@@ -21,6 +26,8 @@ app.use(shopRoutes);
 // Fall back to sending a 404
 app.use(pagesController.get404);
 
+Product.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
+User.hasMany(Product);
 sequelize.sync()
   .then(() => {
     app.listen(3000);
