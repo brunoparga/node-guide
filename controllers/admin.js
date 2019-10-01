@@ -9,7 +9,8 @@ exports.getAddProduct = (req, res) => {
 };
 
 exports.postAddProduct = (req, res) => {
-  Product.create(req.body)
+  req.user
+    .createProduct(req.body)
     .then(() => {
       res.redirect('/');
     });
