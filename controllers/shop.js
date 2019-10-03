@@ -88,9 +88,3 @@ exports.getOrders = (_req, res) => {
   });
 };
 
-exports.getCheckout = (_req, res) => {
-  res.render('shop/checkout', {
-    path: '/checkout',
-    pageTitle: 'Check out',
-  });
-};
