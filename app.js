@@ -59,6 +59,7 @@ sequelize.sync()
     // Promise. It could be left implicit due to being in a 'then' callback.
     return Promise.resolve(user);
   })
+  .then((user) => user.createCart())
   .then(() => {
     app.listen(3000);
   });
