@@ -81,10 +81,38 @@ exports.postDeleteItem = (req, res) => {
     .then(() => res.redirect('/cart'));
 };
 
-exports.getOrders = (_req, res) => {
-  res.render('shop/orders', {
-    path: '/orders',
-    pageTitle: 'Your orders',
-  });
+exports.postOrder = (req, res) => {
+  let fetchedCart;
+  req.user
+    .getCart()
+    .then((cart) => {
+      fetchedCart = cart;
+      return cart.getProducts();
+    })
+    .then((products) => {
+      req.user
+        .createOrder()
+        .then((order) => {
+          const productsWithQuantities = products.map((product) => {
+            const newProduct = product;
+            newProduct.orderItem = { quantity: product.cartItem.quantity };
+            return newProduct;
+          });
+          return order.addProducts(productsWithQuantities);
+        });
+    })
+    .then(() => fetchedCart.setProducts(null))
+    .then(() => res.redirect('/orders'));
 };
 
+exports.getOrders = (req, res) => {
+  req.user
+    .getOrders({ include: ['products'] })
+    .then((orders) => {
+      res.render('shop/orders', {
+        path: '/orders',
+        pageTitle: 'Your orders',
+        orders,
+      });
+    });
+};
