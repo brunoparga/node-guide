@@ -9,6 +9,9 @@ app.set('view engine', 'ejs');
 const sequelize = require('./helpers/database');
 const Product = require('./models/product');
 const User = require('./models/user');
+const Cart = require('./models/cart');
+const CartItem = require('./models/cart-item');
+
 
 // Import routes
 const adminRouter = require('./routes/admin');
@@ -34,8 +37,15 @@ app.use(shopRoutes);
 // Fall back to sending a 404
 app.use(pagesController.get404);
 
+// Model associations in the DB
 Product.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
 User.hasMany(Product);
+User.hasOne(Cart);
+Cart.belongsTo(User);
+Cart.belongsToMany(Product, { through: CartItem });
+Product.belongsToMany(Cart, { through: CartItem });
+
+// Sync DB and start up app
 sequelize.sync()
   .then(() => User.findByPk(1))
   .then((user) => {
