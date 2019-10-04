@@ -9,8 +9,7 @@ const mongoConnect = (callback) => {
     {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-    },
-  )
+    })
     .then((client) => {
       db = client.db();
       callback();
