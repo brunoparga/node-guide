@@ -1,10 +1,10 @@
+require('dotenv').config();
 const { MongoClient } = require('mongodb');
 
 let db;
 
 const mongoConnect = (callback) => {
-  MongoClient.connect(
-    'mongodb+srv://brunoparga:5KJMQ5F97T5XUNMGKB65L8DKX53BB@cluster0-jhvlt.mongodb.net/shop?retryWrites=true&w=majority',
+  MongoClient.connect(process.env.MONGODB_URI,
     // Configuration required by deprecation warnings
     {
       useNewUrlParser: true,
