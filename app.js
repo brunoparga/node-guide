@@ -7,6 +7,7 @@ app.set('view engine', 'ejs');
 
 // Import MongoDB
 const { mongoConnect } = require('./helpers/database');
+const User = require('./models/user');
 
 // Import routes
 const adminRouter = require('./routes/admin');
@@ -17,6 +18,14 @@ const pagesController = require('./controllers/pages');
 app.use(bodyParser.urlencoded({ extended: true }));
 // Serve static files, like CSS and browser JS
 app.use(express.static(path.join(__dirname, 'public')));
+// Make dummy user available everywhere
+app.use((req, _res, next) => {
+  User.findById('5d97caec1c9d44000038eed7')
+    .then((user) => {
+      req.user = user;
+      next();
+    });
+});
 // Prepend a path to these routes
 app.use('/admin', adminRouter);
 // But not these
