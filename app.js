@@ -6,7 +6,7 @@ const app = express();
 app.set('view engine', 'ejs');
 
 // Import MongoDB
-const mongoConnect = require('./helpers/database');
+const { mongoConnect } = require('./helpers/database');
 
 // Import routes
 const adminRouter = require('./routes/admin');
