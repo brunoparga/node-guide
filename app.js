@@ -10,7 +10,7 @@ const { mongoConnect } = require('./helpers/database');
 
 // Import routes
 const adminRouter = require('./routes/admin');
-// const shopRoutes = require('./routes/shop');
+const shopRoutes = require('./routes/shop');
 const pagesController = require('./controllers/pages');
 
 // Parse request body
@@ -20,7 +20,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Prepend a path to these routes
 app.use('/admin', adminRouter);
 // But not these
-// app.use(shopRoutes);
+app.use(shopRoutes);
 // Fall back to sending a 404
 app.use(pagesController.get404);
 
