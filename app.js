@@ -9,7 +9,7 @@ app.set('view engine', 'ejs');
 const mongoConnect = require('./helpers/database');
 
 // Import routes
-// const adminRouter = require('./routes/admin');
+const adminRouter = require('./routes/admin');
 // const shopRoutes = require('./routes/shop');
 const pagesController = require('./controllers/pages');
 
@@ -18,13 +18,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Serve static files, like CSS and browser JS
 app.use(express.static(path.join(__dirname, 'public')));
 // Prepend a path to these routes
-// app.use('/admin', adminRouter);
+app.use('/admin', adminRouter);
 // But not these
 // app.use(shopRoutes);
 // Fall back to sending a 404
 app.use(pagesController.get404);
 
-mongoConnect((client) => {
-  console.log(client);
+mongoConnect(() => {
   app.listen(3000);
 });
