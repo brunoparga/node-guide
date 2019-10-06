@@ -2,19 +2,19 @@ const { ObjectId } = require('mongodb');
 const { getDb } = require('../helpers/database');
 
 class Product {
-  constructor(title, imageURL, price, description, id, userId) {
+  constructor(title, imageURL, price, description, _id, userId) {
     this.title = title;
     this.imageURL = imageURL;
     this.price = price;
     this.description = description;
-    this._id = id ? ObjectId(id) : null;
+    this._id = _id ? ObjectId(_id) : null;
     this.userId = userId;
   }
 
   save() {
     const handle = getDb().collection('products');
-    if (this.id) {
-      return handle.updateOne({ _id: this.id }, { $set: this });
+    if (this._id) {
+      return handle.updateOne({ _id: this._id }, { $set: this });
     }
     return handle.insertOne(this);
   }

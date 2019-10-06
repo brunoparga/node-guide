@@ -60,13 +60,13 @@ exports.postEditProduct = (req, res) => {
     imageURL,
     price,
     description,
-    id,
+    _id,
   } = req.body;
-  new Product(title, imageURL, price, description, id).save();
+  new Product(title, imageURL, price, description, _id).save();
   res.redirect('/admin/products');
 };
 
 exports.postDeleteProduct = (req, res) => {
-  Product.deleteById(req.body.id);
+  Product.deleteById(req.body._id);
   res.redirect('/admin/products');
 };
