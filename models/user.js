@@ -15,7 +15,7 @@ class User {
 
   addToCart(product) {
     // const cartProduct = this.cart.items.findIndex(cp => cp._id === product._id)
-    const updatedCart = { items: [{ ...product, quantity: 1 }] };
+    const updatedCart = { items: [{ productId: ObjectId(product._id), quantity: 1 }] };
     // this.cart = updatedCart;
     return getDb()
       .collection('users')
