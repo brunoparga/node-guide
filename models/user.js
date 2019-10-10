@@ -14,14 +14,24 @@ class User {
   }
 
   addToCart(product) {
-    // const cartProduct = this.cart.items.findIndex(cp => cp._id === product._id)
-    const updatedCart = { items: [{ productId: ObjectId(product._id), quantity: 1 }] };
-    // this.cart = updatedCart;
+    const productIndex = this.cart.items
+      .findIndex((cp) => cp.productId.toString() === product._id.toString());
+
+    let newQuantity = 1;
+    const updatedItems = [...this.cart.items];
+
+    if (productIndex >= 0) {
+      newQuantity = this.cart.items[productIndex].quantity + 1;
+      updatedItems[productIndex].quantity = newQuantity;
+    } else {
+      updatedItems.push({ productId: ObjectId(product._id), quantity: newQuantity });
+    }
+
     return getDb()
       .collection('users')
       .updateOne(
         { _id: ObjectId(this._id) },
-        { $set: { cart: updatedCart } },
+        { $set: { cart: { items: updatedItems } } },
       );
   }
 
