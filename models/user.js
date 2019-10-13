@@ -35,6 +35,26 @@ class User {
       );
   }
 
+  getCart() {
+    // This doesn't work because of Promises. Maybe with async/await?
+    // return this.cart.items.map((item) => {
+    //   return getDb().collection('products').findOne({ _id: item.productId })
+    //     .then((product) => {
+    //       return { ...product, quantity: item.quantity }
+    //     });
+    // });
+    return getDb()
+      .collection('products')
+      .find({ _id: { $in: this.cart.items.map((item) => item.productId) } })
+      .toArray()
+      .then((products) => products.map((product) => ({
+        ...product,
+        quantity: this.cart.items
+          .find((item) => item.productId.toString() === product._id.toString())
+          .quantity,
+      })));
+  }
+
   static findById(userId) {
     return getDb().collection('users').findOne({ _id: ObjectId(userId) });
   }

@@ -46,15 +46,13 @@ exports.postCart = (req, res) => {
 exports.getCart = (req, res) => {
   req.user
     .getCart()
-    .then((cart) => cart
-      .getProducts()
-      .then((products) => {
-        res.render('shop/cart', {
-          path: '/cart',
-          pageTitle: 'Your cart',
-          products,
-        });
-      }));
+    .then((products) => {
+      res.render('shop/cart', {
+        path: '/cart',
+        pageTitle: 'Your cart',
+        products,
+      });
+    });
 };
 
 exports.postDeleteItem = (req, res) => {
