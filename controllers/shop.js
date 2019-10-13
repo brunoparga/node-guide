@@ -63,26 +63,8 @@ exports.postDeleteItem = (req, res) => {
 };
 
 exports.postOrder = (req, res) => {
-  let fetchedCart;
   req.user
-    .getCart()
-    .then((cart) => {
-      fetchedCart = cart;
-      return cart.getProducts();
-    })
-    .then((products) => {
-      req.user
-        .createOrder()
-        .then((order) => {
-          const productsWithQuantities = products.map((product) => {
-            const newProduct = product;
-            newProduct.orderItem = { quantity: product.cartItem.quantity };
-            return newProduct;
-          });
-          return order.addProducts(productsWithQuantities);
-        });
-    })
-    .then(() => fetchedCart.setProducts(null))
+    .addOrder()
     .then(() => res.redirect('/orders'));
 };
 
