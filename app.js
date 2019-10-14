@@ -1,12 +1,12 @@
+require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
 const app = express();
 app.set('view engine', 'ejs');
 
-// Import MongoDB
-const { mongoConnect } = require('./helpers/database');
 const User = require('./models/user');
 
 // Import routes
@@ -33,6 +33,14 @@ app.use(shopRoutes);
 // Fall back to sending a 404
 app.use(pagesController.get404);
 
-mongoConnect(() => {
-  app.listen(3000);
-});
+mongoose
+  .connect(
+    process.env.MONGODB_URI,
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    },
+  )
+  .then(() => {
+    app.listen(3000);
+  });
