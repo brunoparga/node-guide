@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const app = express();
 app.set('view engine', 'ejs');
 
-// const User = require('./models/user');
+const User = require('./models/user');
 
 // Import routes
 const adminRouter = require('./routes/admin');
@@ -19,13 +19,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Serve static files, like CSS and browser JS
 app.use(express.static(path.join(__dirname, 'public')));
 // Make dummy user available everywhere
-// app.use((req, _res, next) => {
-//   User.findById('5d97caec1c9d44000038eed7')
-//     .then((user) => {
-//       req.user = new User(user.name, user.email, user.cart, user._id);
-//       next();
-//     });
-// });
+app.use((req, _res, next) => {
+  User.findById('5da78d888ccb1f3c98043d2b')
+    .then((user) => {
+      req.user = user;
+      next();
+    });
+});
 // Prepend a path to these routes
 app.use('/admin', adminRouter);
 // But not these
@@ -42,5 +42,17 @@ mongoose
     },
   )
   .then(() => {
+    User.findOne()
+      .then((user) => {
+        if (!user) {
+          new User({
+            name: 'Bruno',
+            email: 'ceo@superstore.com',
+            cart: {
+              items: [],
+            },
+          }).save();
+        }
+      });
     app.listen(3000);
   });
