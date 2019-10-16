@@ -9,14 +9,13 @@ exports.getAddProduct = (_req, res) => {
 };
 
 exports.postAddProduct = (req, res) => {
-  const {
-    title,
-    imageURL,
-    price,
-    description,
-  } = req.body;
-  const product = new Product(title, imageURL, price, description, null, req.user._id);
-  product.save()
+  const productData = {};
+  ['title', 'imageURL', 'price', 'description'].forEach((prop) => {
+    productData[prop] = req.body[prop];
+  });
+  const product = new Product(productData);
+  product
+    .save()
     .then(() => {
       res.redirect('/');
     });

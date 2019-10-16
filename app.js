@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const app = express();
 app.set('view engine', 'ejs');
 
-const User = require('./models/user');
+// const User = require('./models/user');
 
 // Import routes
 const adminRouter = require('./routes/admin');
@@ -19,13 +19,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Serve static files, like CSS and browser JS
 app.use(express.static(path.join(__dirname, 'public')));
 // Make dummy user available everywhere
-app.use((req, _res, next) => {
-  User.findById('5d97caec1c9d44000038eed7')
-    .then((user) => {
-      req.user = new User(user.name, user.email, user.cart, user._id);
-      next();
-    });
-});
+// app.use((req, _res, next) => {
+//   User.findById('5d97caec1c9d44000038eed7')
+//     .then((user) => {
+//       req.user = new User(user.name, user.email, user.cart, user._id);
+//       next();
+//     });
+// });
 // Prepend a path to these routes
 app.use('/admin', adminRouter);
 // But not these
