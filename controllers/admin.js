@@ -21,17 +21,15 @@ exports.postAddProduct = (req, res) => {
     });
 };
 
-exports.getProducts = (req, res) => {
-  Product
-    .find()
-    .then((products) => {
-      res.render('admin/products', {
-        prods: products,
-        pageTitle: 'Shop',
-        path: '/admin/products',
-      });
+exports.getProducts = (req, res) => Product
+  .find()
+  .then((products) => {
+    res.render('admin/products', {
+      prods: products,
+      pageTitle: 'Shop',
+      path: '/admin/products',
     });
-};
+  });
 
 exports.getEditProduct = (req, res) => Product
   .findById(req.params.productId)
