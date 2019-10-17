@@ -1,10 +1,7 @@
 const router = require('express').Router();
+const authController = require('../controllers/auth');
 
-router.get('/login', (req, res) => {
-  res.render('auth/login', {
-    path: '/login',
-    pageTitle: 'Log In',
-  });
-});
+router.get('/login', authController.getLogin);
+router.post('/login', authController.postLogin);
 
 module.exports = router;
