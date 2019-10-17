@@ -10,7 +10,7 @@ app.set('view engine', 'ejs');
 const User = require('./models/user');
 
 // Import routes
-const adminRouter = require('./routes/admin');
+const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 const pagesController = require('./controllers/pages');
 
@@ -27,7 +27,7 @@ app.use((req, _res, next) => {
     });
 });
 // Prepend a path to these routes
-app.use('/admin', adminRouter);
+app.use('/admin', adminRoutes);
 // But not these
 app.use(shopRoutes);
 // Fall back to sending a 404
