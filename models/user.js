@@ -42,9 +42,13 @@ userSchema.methods.addToCart = function addToCart(product) {
       quantity: newQuantity,
     });
   }
-  this.cart = {
-    items: updatedItems,
-  };
+  this.cart.items = updatedItems;
+  return this.save();
+};
+
+userSchema.methods.removeFromCart = function removeFromCart(productId) {
+  this.cart.items = this.cart.items
+    .filter((item) => item.productId.toString() !== productId.toString());
   return this.save();
 };
 
