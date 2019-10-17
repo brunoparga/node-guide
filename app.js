@@ -11,6 +11,7 @@ const User = require('./models/user');
 
 // Import routes
 const adminRoutes = require('./routes/admin');
+const authRoutes = require('./routes/auth');
 const shopRoutes = require('./routes/shop');
 const pagesController = require('./controllers/pages');
 
@@ -29,6 +30,7 @@ app.use((req, _res, next) => {
 // Prepend a path to these routes
 app.use('/admin', adminRoutes);
 // But not these
+app.use(authRoutes);
 app.use(shopRoutes);
 // Fall back to sending a 404
 app.use(pagesController.get404);
