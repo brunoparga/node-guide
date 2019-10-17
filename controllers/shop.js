@@ -45,12 +45,13 @@ exports.postCart = (req, res) => {
 
 exports.getCart = (req, res) => {
   req.user
-    .getCart()
-    .then((products) => {
+    .populate('cart.items.productId')
+    .execPopulate()
+    .then((user) => {
       res.render('shop/cart', {
         path: '/cart',
         pageTitle: 'Your cart',
-        products,
+        products: user.cart.items,
       });
     });
 };
