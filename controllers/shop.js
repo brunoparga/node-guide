@@ -1,24 +1,26 @@
 const Product = require('../models/product');
 const Order = require('../models/order');
 
-exports.getIndex = (_req, res) => {
+exports.getIndex = (req, res) => {
   Product.find()
     .then((products) => {
       res.render('shop/index', {
         prods: products,
         pageTitle: 'Index',
         path: '/',
+        isAuthenticated: req.session.loggedIn,
       });
     });
 };
 
-exports.getProducts = (_req, res) => {
+exports.getProducts = (req, res) => {
   Product.find()
     .then((products) => {
       res.render('shop/product-list', {
         prods: products,
         pageTitle: 'Shop',
         path: '/products',
+        isAuthenticated: req.session.loggedIn,
       });
     });
 };
@@ -30,6 +32,7 @@ exports.getProduct = (req, res) => {
         product,
         pageTitle: product.title,
         path: '/products',
+        isAuthenticated: req.session.loggedIn,
       });
     });
 };
@@ -47,6 +50,7 @@ exports.getCart = (req, res) => {
         path: '/cart',
         pageTitle: 'Your cart',
         products: user.cart.items,
+        isAuthenticated: req.session.loggedIn,
       });
     });
 };
@@ -81,6 +85,7 @@ exports.getOrders = (req, res) => {
         path: '/orders',
         pageTitle: 'Your orders',
         orders,
+        isAuthenticated: req.session.loggedIn,
       });
     });
 };

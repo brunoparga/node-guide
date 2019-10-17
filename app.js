@@ -3,6 +3,7 @@ const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const session = require('express-session');
 
 const app = express();
 app.set('view engine', 'ejs');
@@ -19,6 +20,12 @@ const pagesController = require('./controllers/pages');
 app.use(bodyParser.urlencoded({ extended: true }));
 // Serve static files, like CSS and browser JS
 app.use(express.static(path.join(__dirname, 'public')));
+// Set up server-side stored sessions
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+}));
 // Make dummy user available everywhere
 app.use((req, _res, next) => {
   User.findById('5da78d888ccb1f3c98043d2b')
