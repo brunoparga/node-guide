@@ -9,7 +9,7 @@ exports.getAddProduct = (_req, res) => {
 };
 
 exports.postAddProduct = (req, res) => {
-  const productData = {};
+  const productData = { userId: req.user };
   ['title', 'imageURL', 'price', 'description'].forEach((prop) => {
     productData[prop] = req.body[prop];
   });
