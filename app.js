@@ -4,9 +4,14 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const session = require('express-session');
+const MongoDBStore = require('connect-mongodb-session')(session);
 
 const app = express();
 app.set('view engine', 'ejs');
+const store = new MongoDBStore({
+  uri: process.env.MONGODB_URI,
+  collection: 'sessions',
+});
 
 const User = require('./models/user');
 
@@ -25,15 +30,8 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
+  store,
 }));
-// Make dummy user available everywhere
-app.use((req, _res, next) => {
-  User.findById('5da78d888ccb1f3c98043d2b')
-    .then((user) => {
-      req.user = user;
-      next();
-    });
-});
 // Prepend a path to these routes
 app.use('/admin', adminRoutes);
 // But not these

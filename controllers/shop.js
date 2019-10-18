@@ -8,7 +8,7 @@ exports.getIndex = (req, res) => {
         prods: products,
         pageTitle: 'Index',
         path: '/',
-        isAuthenticated: req.session.loggedIn,
+        isAuthenticated: req.session.user,
       });
     });
 };
@@ -20,7 +20,7 @@ exports.getProducts = (req, res) => {
         prods: products,
         pageTitle: 'Shop',
         path: '/products',
-        isAuthenticated: req.session.loggedIn,
+        isAuthenticated: req.session.user,
       });
     });
 };
@@ -32,36 +32,36 @@ exports.getProduct = (req, res) => {
         product,
         pageTitle: product.title,
         path: '/products',
-        isAuthenticated: req.session.loggedIn,
+        isAuthenticated: req.session.user,
       });
     });
 };
 
 exports.postCart = (req, res) => {
   Product.findById(req.body.productId)
-    .then((product) => req.user.addToCart(product))
+    .then((product) => req.session.user.addToCart(product))
     .then(() => res.redirect('/cart'));
 };
 
 exports.getCart = (req, res) => {
-  req.user.populate('cart.items.productId').execPopulate()
+  req.session.user.populate('cart.items.productId').execPopulate()
     .then((user) => {
       res.render('shop/cart', {
         path: '/cart',
         pageTitle: 'Your cart',
         products: user.cart.items,
-        isAuthenticated: req.session.loggedIn,
+        isAuthenticated: req.session.user,
       });
     });
 };
 
 exports.postDeleteItem = (req, res) => {
-  req.user.removeFromCart(req.body.productId)
+  req.session.user.removeFromCart(req.body.productId)
     .then(() => res.redirect('/cart'));
 };
 
 exports.postOrder = (req, res) => {
-  req.user
+  req.session.user
     .populate('cart.items.productId').execPopulate()
     .then((user) => {
       const order = new Order({
@@ -74,18 +74,18 @@ exports.postOrder = (req, res) => {
       });
       return order.save();
     })
-    .then(() => req.user.clearCart())
+    .then(() => req.session.user.clearCart())
     .then(() => res.redirect('/orders'));
 };
 
 exports.getOrders = (req, res) => {
-  Order.find({ 'user.userId': req.user._id })
+  Order.find({ 'user.userId': req.session.user._id })
     .then((orders) => {
       res.render('shop/orders', {
         path: '/orders',
         pageTitle: 'Your orders',
         orders,
-        isAuthenticated: req.session.loggedIn,
+        isAuthenticated: req.session.user,
       });
     });
 };

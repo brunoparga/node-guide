@@ -5,17 +5,16 @@ exports.getAddProduct = (req, res) => {
     pageTitle: 'Add Product',
     path: '/admin/add-product',
     editing: false,
-    isAuthenticated: req.session.loggedIn,
+    isAuthenticated: req.session.user,
   });
 };
 
 exports.postAddProduct = (req, res) => {
-  const productData = { userId: req.user };
+  const product = { userId: req.session.user };
   ['title', 'imageURL', 'price', 'description'].forEach((prop) => {
-    productData[prop] = req.body[prop];
+    product[prop] = req.body[prop];
   });
-  const product = new Product(productData);
-  product
+  new Product(product)
     .save()
     .then(() => {
       res.redirect('/');
@@ -29,7 +28,7 @@ exports.getProducts = (req, res) => Product
       prods: products,
       pageTitle: 'Shop',
       path: '/admin/products',
-      isAuthenticated: req.session.loggedIn,
+      isAuthenticated: req.session.user,
     });
   });
 
@@ -44,7 +43,7 @@ exports.getEditProduct = (req, res) => Product
       path: '/admin/edit-product',
       editing: true,
       product,
-      isAuthenticated: req.session.loggedIn,
+      isAuthenticated: req.session.user,
     });
   });
 
