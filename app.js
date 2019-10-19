@@ -32,6 +32,13 @@ app.use(session({
   saveUninitialized: false,
   store,
 }));
+// Put the user in the request
+app.use((req, _res, next) => {
+  if (req.session.user) {
+    User.findById(req.session.user._id).then((user) => { req.user = user; });
+  }
+  next();
+});
 // Prepend a path to these routes
 app.use('/admin', adminRoutes);
 // But not these
