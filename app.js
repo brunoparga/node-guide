@@ -35,9 +35,13 @@ app.use(session({
 // Put the user in the request
 app.use((req, _res, next) => {
   if (req.session.user) {
-    User.findById(req.session.user._id).then((user) => { req.user = user; });
+    User.findById(req.session.user._id).then((user) => {
+      req.user = user;
+      next();
+    });
+  } else {
+    next();
   }
-  next();
 });
 // Prepend a path to these routes
 app.use('/admin', adminRoutes);
