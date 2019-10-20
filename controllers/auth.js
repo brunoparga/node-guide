@@ -39,10 +39,19 @@ exports.getLogin = (req, res) => {
 };
 
 exports.postLogin = (req, res) => {
-  User.findById('5da78d888ccb1f3c98043d2b')
+  const { email, password } = req.body;
+  User.findOne({ email })
     .then((user) => {
-      req.session.user = user;
-      req.session.save(() => res.redirect('/'));
+      if (!user) { return res.redirect('/login'); }
+      return bcrypt
+        .compare(password, user.password)
+        .then((match) => {
+          if (match) {
+            req.session.user = user;
+            return req.session.save(() => res.redirect('/'));
+          }
+          return res.redirect('/login');
+        });
     });
 };
 
