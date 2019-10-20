@@ -60,17 +60,5 @@ mongoose
     },
   )
   .then(() => {
-    User.findOne()
-      .then((user) => {
-        if (!user) {
-          new User({
-            name: 'Bruno',
-            email: 'ceo@superstore.com',
-            cart: {
-              items: [],
-            },
-          }).save();
-        }
-      });
     app.listen(3000);
   });
