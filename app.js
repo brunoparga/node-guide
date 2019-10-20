@@ -5,6 +5,9 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
+const csurf = require('csurf');
+
+const User = require('./models/user');
 
 const app = express();
 app.set('view engine', 'ejs');
@@ -12,8 +15,7 @@ const store = new MongoDBStore({
   uri: process.env.MONGODB_URI,
   collection: 'sessions',
 });
-
-const User = require('./models/user');
+const csrfProtection = csurf();
 
 // Import routes
 const adminRoutes = require('./routes/admin');
@@ -32,6 +34,8 @@ app.use(session({
   saveUninitialized: false,
   store,
 }));
+// Protect against CSRF attacks
+app.use(csrfProtection);
 // Put the user in the request
 app.use((req, _res, next) => {
   if (req.session.user) {
@@ -42,6 +46,12 @@ app.use((req, _res, next) => {
   } else {
     next();
   }
+});
+// Assign values available on all views
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.user;
+  res.locals.csrfToken = req.csrfToken();
+  next();
 });
 // Prepend a path to these routes
 app.use('/admin', adminRoutes);
