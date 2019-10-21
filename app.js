@@ -5,7 +5,8 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
-const csurf = require('csurf');
+const csrfProtection = require('csurf');
+const flash = require('connect-flash');
 
 const User = require('./models/user');
 
@@ -15,7 +16,6 @@ const store = new MongoDBStore({
   uri: process.env.MONGODB_URI,
   collection: 'sessions',
 });
-const csrfProtection = csurf();
 
 // Import routes
 const adminRoutes = require('./routes/admin');
@@ -35,7 +35,8 @@ app.use(session({
   store,
 }));
 // Protect against CSRF attacks
-app.use(csrfProtection);
+app.use(csrfProtection());
+app.use(flash());
 // Put the user in the request
 app.use((req, _res, next) => {
   if (req.session.user) {

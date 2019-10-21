@@ -5,14 +5,20 @@ exports.getSignup = (req, res) => {
   res.render('auth/signup', {
     path: '/signup',
     pageTitle: 'Sign Up',
+    errorMessage: req.flash('error')[0],
   });
 };
 
 exports.postSignup = (req, res) => {
-  const { email, password } = req.body;
-  User.findOne({ email })
+  const { email, password, confirmPassword } = req.body;
+  if (password !== confirmPassword) {
+    req.flash('error', "The passwords don't match.");
+    return res.redirect('/signup');
+  }
+  return User.findOne({ email })
     .then((user) => {
       if (user) {
+        req.flash('error', 'Email already taken.');
         return res.redirect('/signup');
       }
       return bcrypt.hash(password, 12)
@@ -33,6 +39,7 @@ exports.getLogin = (req, res) => {
   res.render('auth/login', {
     path: '/login',
     pageTitle: 'Log In',
+    errorMessage: req.flash('error')[0],
   });
 };
 
@@ -40,7 +47,10 @@ exports.postLogin = (req, res) => {
   const { email, password } = req.body;
   User.findOne({ email })
     .then((user) => {
-      if (!user) { return res.redirect('/login'); }
+      if (!user) {
+        req.flash('error', 'Invalid email or password.');
+        return res.redirect('/login');
+      }
       return bcrypt
         .compare(password, user.password)
         .then((match) => {
@@ -48,6 +58,7 @@ exports.postLogin = (req, res) => {
             req.session.user = user;
             return req.session.save(() => res.redirect('/'));
           }
+          req.flash('error', 'Invalid email or password.');
           return res.redirect('/login');
         });
     });
