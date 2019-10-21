@@ -10,19 +10,20 @@
   "author": "Bruno Parga",
   "license": "ISC",
   "devDependencies": {
-    "nodemon": "^1.19.2"
+    "nodemon": "^1.19.4"
   },
   "dependencies": {
+    "@sendgrid/mail": "^6.4.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "connect-flash": "^0.1.1",
     "connect-mongodb-session": "^2.2.0",
     "csurf": "^1.10.0",
-    "dotenv": "^8.1.0",
+    "dotenv": "^8.2.0",
     "ejs": "^2.7.1",
     "express": "^4.17.1",
     "express-session": "^1.17.0",
-    "mongodb": "^3.3.2",
-    "mongoose": "^5.7.4"
+    "mongodb": "^3.3.3",
+    "mongoose": "^5.7.5"
   }
 }

@@ -1,4 +1,8 @@
+require('dotenv').config();
 const bcrypt = require('bcryptjs');
+const mailer = require('@sendgrid/mail');
+
+mailer.setApiKey(process.env.SENDGRID_API_KEY);
 const User = require('../models/user');
 
 exports.getSignup = (req, res) => {
@@ -30,6 +34,12 @@ exports.postSignup = (req, res) => {
           },
         }).save())
         .then(() => {
+          mailer.send({
+            to: email,
+            from: 'welcome@superstore.com',
+            subject: 'Welcome to the Amazon-Killer!',
+            html: '<h1>Hi there!!!!</h1>',
+          });
           res.redirect('/login');
         });
     });
