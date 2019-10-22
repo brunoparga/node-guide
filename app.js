@@ -52,6 +52,9 @@ app.use((req, _res, next) => {
 app.use((req, res, next) => {
   res.locals.isAuthenticated = req.user;
   res.locals.csrfToken = req.csrfToken();
+  if (req.user) {
+    res.locals.userEmail = req.user.email;
+  }
   next();
 });
 // Prepend a path to these routes

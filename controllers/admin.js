@@ -44,17 +44,22 @@ exports.getEditProduct = (req, res) => Product
     });
   });
 
-exports.postEditProduct = (req, res) => {
-  const updatedProduct = {};
-  ['title', 'imageURL', 'price', 'description'].forEach((prop) => {
-    updatedProduct[prop] = req.body[prop];
+exports.postEditProduct = (req, res) => Product
+  .findById(req.body._id)
+  .then((product) => {
+    if (product.userId.toString() === req.user._id.toString()) {
+      const updatedProduct = product;
+      ['title', 'imageURL', 'price', 'description'].forEach((prop) => {
+        updatedProduct[prop] = req.body[prop];
+      });
+      updatedProduct.save()
+        .then(() => res.redirect('/admin/products'));
+    } else {
+      res.redirect('/');
+    }
   });
-  Product
-    .findByIdAndUpdate(req.body._id, updatedProduct)
-    .then(() => res.redirect('/admin/products'));
-};
 
 exports.postDeleteProduct = (req, res) => {
-  Product.findByIdAndDelete(req.body._id)
+  Product.deleteOne({ _id: req.body._id, userId: req.user._id })
     .then(() => res.redirect('/admin/products'));
 };
