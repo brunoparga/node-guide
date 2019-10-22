@@ -2,6 +2,7 @@ require('dotenv').config();
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const mailer = require('@sendgrid/mail');
+const { validationResult } = require('express-validator');
 
 mailer.setApiKey(process.env.SENDGRID_API_KEY);
 const User = require('../models/user');
@@ -15,34 +16,32 @@ exports.getSignup = (req, res) => {
 };
 
 exports.postSignup = (req, res) => {
-  const { email, password, confirmPassword } = req.body;
-  if (password !== confirmPassword) {
-    req.flash('error', "The passwords don't match.");
-    return res.redirect('/signup');
+  const { email, password } = req.body;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422)
+      .render('auth/signup', {
+        path: '/signup',
+        pageTitle: 'Sign Up',
+        errorMessage: errors.array()[0].msg,
+      });
   }
-  return User.findOne({ email })
-    .then((user) => {
-      if (user) {
-        req.flash('error', 'Email already taken.');
-        return res.redirect('/signup');
-      }
-      return bcrypt.hash(password, 12)
-        .then((hashedPassword) => new User({
-          email,
-          password: hashedPassword,
-          cart: {
-            items: [],
-          },
-        }).save())
-        .then(() => {
-          mailer.send({
-            to: email,
-            from: 'welcome@superstore.com',
-            subject: 'Welcome to the Amazon-Killer!',
-            html: '<h1>Hi there!!!!</h1>',
-          });
-          res.redirect('/login');
-        });
+  return bcrypt.hash(password, 12)
+    .then((hashedPassword) => new User({
+      email,
+      password: hashedPassword,
+      cart: {
+        items: [],
+      },
+    }).save())
+    .then(() => {
+      mailer.send({
+        to: email,
+        from: 'welcome@superstore.com',
+        subject: 'Welcome to the Amazon-Killer!',
+        html: '<h1>Hi there!!!!</h1>',
+      });
+      res.redirect('/login');
     });
 };
 
