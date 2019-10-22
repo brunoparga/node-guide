@@ -16,7 +16,6 @@ exports.getSignup = (req, res) => {
 };
 
 exports.postSignup = (req, res) => {
-  const { email, password } = req.body;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(422)
@@ -26,6 +25,8 @@ exports.postSignup = (req, res) => {
         errorMessage: errors.array()[0].msg,
       });
   }
+
+  const { email, password } = req.body;
   return bcrypt.hash(password, 12)
     .then((hashedPassword) => new User({
       email,
@@ -54,8 +55,18 @@ exports.getLogin = (req, res) => {
 };
 
 exports.postLogin = (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422)
+      .render('auth/login', {
+        path: '/login',
+        pageTitle: 'Log In',
+        errorMessage: errors.array()[0].msg,
+      });
+  }
+
   const { email, password } = req.body;
-  User.findOne({ email })
+  return User.findOne({ email })
     .then((user) => {
       if (!user) {
         req.flash('error', 'Invalid email or password.');
