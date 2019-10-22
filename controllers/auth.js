@@ -12,17 +12,23 @@ exports.getSignup = (req, res) => {
     path: '/signup',
     pageTitle: 'Sign Up',
     errorMessage: req.flash('error')[0],
+    inputEmail: '',
   });
 };
 
 exports.postSignup = (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    let inputEmail;
+    if (errors.array().every((error) => error.param !== 'email')) {
+      inputEmail = req.body.email;
+    }
     return res.status(422)
       .render('auth/signup', {
         path: '/signup',
         pageTitle: 'Sign Up',
         errorMessage: errors.array()[0].msg,
+        inputEmail,
       });
   }
 
@@ -51,17 +57,23 @@ exports.getLogin = (req, res) => {
     path: '/login',
     pageTitle: 'Log In',
     errorMessage: req.flash('error')[0],
+    inputEmail: '',
   });
 };
 
 exports.postLogin = (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    let inputEmail;
+    if (errors.array().every((error) => error.param !== 'email')) {
+      inputEmail = req.body.email;
+    }
     return res.status(422)
       .render('auth/login', {
         path: '/login',
         pageTitle: 'Log In',
         errorMessage: errors.array()[0].msg,
+        inputEmail,
       });
   }
 
