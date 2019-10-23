@@ -7,14 +7,32 @@ const { validationResult } = require('express-validator');
 mailer.setApiKey(process.env.SENDGRID_API_KEY);
 const User = require('../models/user');
 
-exports.getSignup = (req, res) => {
-  res.render('auth/signup', {
-    path: '/signup',
-    pageTitle: 'Sign Up',
-    errorMessage: req.flash('error')[0],
-    inputEmail: '',
+const SIGNUP = {
+  view: 'auth/signup',
+  path: '/signup',
+  pageTitle: 'Sign Up',
+};
+
+const LOGIN = {
+  view: 'auth/login',
+  path: '/login',
+  pageTitle: 'Log In',
+};
+
+const RESET = {
+  view: 'auth/reset',
+  path: '/reset',
+  pageTitle: 'Reset password',
+};
+
+const render = (page, res, errorMessage, inputEmail, status = 200) => {
+  const { path, pageTitle } = page;
+  return res.status(status).render(page.view, {
+    path, pageTitle, errorMessage, inputEmail,
   });
 };
+
+exports.getSignup = (req, res) => render(SIGNUP, res, req.flash('error')[0], '');
 
 exports.postSignup = (req, res) => {
   const errors = validationResult(req);
@@ -23,13 +41,7 @@ exports.postSignup = (req, res) => {
     if (errors.array().every((error) => error.param !== 'email')) {
       inputEmail = req.body.email;
     }
-    return res.status(422)
-      .render('auth/signup', {
-        path: '/signup',
-        pageTitle: 'Sign Up',
-        errorMessage: errors.array()[0].msg,
-        inputEmail,
-      });
+    return render(SIGNUP, res, errors.array()[0].msg, inputEmail, 422);
   }
 
   const { email, password } = req.body;
@@ -52,14 +64,7 @@ exports.postSignup = (req, res) => {
     });
 };
 
-exports.getLogin = (req, res) => {
-  res.render('auth/login', {
-    path: '/login',
-    pageTitle: 'Log In',
-    errorMessage: req.flash('error')[0],
-    inputEmail: '',
-  });
-};
+exports.getLogin = (req, res) => render(LOGIN, res, req.flash('error')[0], '');
 
 exports.postLogin = (req, res) => {
   const errors = validationResult(req);
@@ -68,21 +73,14 @@ exports.postLogin = (req, res) => {
     if (errors.array().every((error) => error.param !== 'email')) {
       inputEmail = req.body.email;
     }
-    return res.status(422)
-      .render('auth/login', {
-        path: '/login',
-        pageTitle: 'Log In',
-        errorMessage: errors.array()[0].msg,
-        inputEmail,
-      });
+    return render(LOGIN, res, errors.array()[0].msg, inputEmail, 422);
   }
 
   const { email, password } = req.body;
   return User.findOne({ email })
     .then((user) => {
       if (!user) {
-        req.flash('error', 'Invalid email or password.');
-        return res.redirect('/login');
+        return render(LOGIN, res, 'Invalid email or password.', email, 422);
       }
       return bcrypt
         .compare(password, user.password)
@@ -91,32 +89,24 @@ exports.postLogin = (req, res) => {
             req.session.user = user;
             return req.session.save(() => res.redirect('/'));
           }
-          req.flash('error', 'Invalid email or password.');
-          return res.redirect('/login');
+          return render(LOGIN, res, 'Invalid email or password.', email, 422);
         });
     });
 };
 
-exports.getReset = (req, res) => {
-  res.render('auth/reset', {
-    path: '/reset',
-    pageTitle: 'Reset password',
-    errorMessage: req.flash('error')[0],
-  });
-};
+exports.getReset = (req, res) => render(RESET, res, req.flash('error')[0], '');
 
 exports.postReset = (req, res) => {
   crypto.randomBytes(32, (err, buffer) => {
     if (err) {
-      return res.redirect('/reset');
+      return render(RESET, res, 'Please try again.', '');
     }
     const token = buffer.toString('hex');
     return User
       .findOne({ email: req.body.email })
       .then((user) => {
         if (!user) {
-          req.flash('error', 'Email not found.');
-          return res.redirect('/reset');
+          return render(RESET, res, 'Email not found.', req.body.email, 422);
         }
         const newUser = user;
         newUser.resetToken = token;
