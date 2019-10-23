@@ -9,15 +9,10 @@ const mongoose = require('mongoose');
 const session = require('./middleware/session');
 const setUser = require('./middleware/set-user');
 const setLocals = require('./middleware/set-locals');
+const routes = require('./routes/routes');
 
 const app = express();
 app.set('view engine', 'ejs');
-
-// Import routes
-const adminRoutes = require('./routes/admin');
-const authRoutes = require('./routes/auth');
-const shopRoutes = require('./routes/shop');
-const pagesController = require('./controllers/pages');
 
 // Parse request body
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -33,13 +28,8 @@ app.use(flash());
 app.use(setUser);
 // Assign values available on all views
 app.use(setLocals);
-// Prepend a path to these routes
-app.use('/admin', adminRoutes);
-// But not these
-app.use(authRoutes);
-app.use(shopRoutes);
-// Fall back to sending a 404
-app.use(pagesController.get404);
+// Routes
+app.use(routes);
 
 mongoose
   .connect(
