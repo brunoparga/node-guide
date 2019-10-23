@@ -14,21 +14,13 @@ const routes = require('./routes/routes');
 const app = express();
 app.set('view engine', 'ejs');
 
-// Parse request body
 app.use(bodyParser.urlencoded({ extended: true }));
-// Serve static files, like CSS and browser JS
 app.use(express.static(path.join(__dirname, 'public')));
-// Set up server-side stored sessions
 app.use(session);
-// Protect against CSRF attacks
 app.use(csrfProtection());
-// Set up flash messages in the request
 app.use(flash());
-// Put the user in the request
 app.use(setUser);
-// Assign values available on all views
 app.use(setLocals);
-// Routes
 app.use(routes);
 
 mongoose.connect(process.env.MONGODB_URI,
