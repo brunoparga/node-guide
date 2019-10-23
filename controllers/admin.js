@@ -1,23 +1,29 @@
+const { validationResult } = require('express-validator');
 const Product = require('../models/product');
 
-exports.getAddProduct = (req, res) => {
-  res.render('admin/edit-product', {
-    pageTitle: 'Add Product',
-    path: '/admin/add-product',
-    editing: false,
+const renderEdit = (res, product, editing, errorMessage, status = 200) => {
+  res.status(status).render('admin/edit-product', {
+    pageTitle: (editing ? 'Edit Product' : 'Add Product'),
+    path: '/admin/edit-product',
+    product,
+    editing,
+    errorMessage,
   });
 };
+
+exports.getAddProduct = (req, res) => renderEdit(res, {}, false, '');
 
 exports.postAddProduct = (req, res) => {
   const product = { userId: req.user };
   ['title', 'imageURL', 'price', 'description'].forEach((prop) => {
     product[prop] = req.body[prop];
   });
-  new Product(product)
-    .save()
-    .then(() => {
-      res.redirect('/');
-    });
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return renderEdit(res, product, false, errors.array()[0].msg, 422);
+  }
+  return new Product(product).save()
+    .then(() => res.redirect('/'));
 };
 
 exports.getProducts = (req, res) => Product
@@ -36,12 +42,7 @@ exports.getEditProduct = (req, res) => Product
     if (!product) {
       return res.redirect('/');
     }
-    return res.render('admin/edit-product', {
-      pageTitle: 'Edit Product',
-      path: '/admin/edit-product',
-      editing: true,
-      product,
-    });
+    return renderEdit(res, product, true, '');
   });
 
 exports.postEditProduct = (req, res) => Product
@@ -52,11 +53,14 @@ exports.postEditProduct = (req, res) => Product
       ['title', 'imageURL', 'price', 'description'].forEach((prop) => {
         updatedProduct[prop] = req.body[prop];
       });
-      updatedProduct.save()
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return renderEdit(res, updatedProduct, true, errors.array()[0].msg, 422);
+      }
+      return updatedProduct.save()
         .then(() => res.redirect('/admin/products'));
-    } else {
-      res.redirect('/');
     }
+    return res.redirect('/');
   });
 
 exports.postDeleteProduct = (req, res) => {
