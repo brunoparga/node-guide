@@ -1,21 +1,17 @@
 require('dotenv').config();
-const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
-const session = require('express-session');
-const MongoDBStore = require('connect-mongodb-session')(session);
+const path = require('path');
 const csrfProtection = require('csurf');
 const flash = require('connect-flash');
+const mongoose = require('mongoose');
 
-const User = require('./models/user');
+const session = require('./middleware/session');
+const setUser = require('./middleware/set-user');
+const setLocals = require('./middleware/set-locals');
 
 const app = express();
 app.set('view engine', 'ejs');
-const store = new MongoDBStore({
-  uri: process.env.MONGODB_URI,
-  collection: 'sessions',
-});
 
 // Import routes
 const adminRoutes = require('./routes/admin');
@@ -28,35 +24,15 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Serve static files, like CSS and browser JS
 app.use(express.static(path.join(__dirname, 'public')));
 // Set up server-side stored sessions
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  store,
-}));
+app.use(session);
 // Protect against CSRF attacks
 app.use(csrfProtection());
+// Set up flash messages in the request
 app.use(flash());
 // Put the user in the request
-app.use((req, _res, next) => {
-  if (req.session.user) {
-    User.findById(req.session.user._id).then((user) => {
-      req.user = user;
-      next();
-    });
-  } else {
-    next();
-  }
-});
+app.use(setUser);
 // Assign values available on all views
-app.use((req, res, next) => {
-  res.locals.isAuthenticated = req.user;
-  res.locals.csrfToken = req.csrfToken();
-  if (req.user) {
-    res.locals.userEmail = req.user.email;
-  }
-  next();
-});
+app.use(setLocals);
 // Prepend a path to these routes
 app.use('/admin', adminRoutes);
 // But not these
