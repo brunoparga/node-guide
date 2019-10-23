@@ -31,14 +31,6 @@ app.use(setLocals);
 // Routes
 app.use(routes);
 
-mongoose
-  .connect(
-    process.env.MONGODB_URI,
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    },
-  )
-  .then(() => {
-    app.listen(3000);
-  });
+mongoose.connect(process.env.MONGODB_URI,
+  { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => app.listen(3000));
