@@ -7,27 +7,43 @@
   <%- include('../includes/navigation.ejs') %>
 
   <main>
-    <% if (errorMessage) { %>
-      <div class="user-message user-message--error">
-        <%= errorMessage %>
-      </div>
-    <% } %>
+    <%- include('../includes/errors.ejs', { errors }) %>
     <form class="product-form" action="/admin/<%= editing ? 'edit-product' : 'add-product' %>" method="POST">
       <div class="form-control">
         <label for="title">Title</label>
-        <input type="text" name="title" id="title" value="<%= product.title %>">
+        <input
+          class="<%= errors.find(err => err.param === 'title') ? 'invalid' : '' %>"
+          type="text"
+          name="title"
+          id="title"
+          value="<%= product.title %>">
       </div>
       <div class="form-control">
         <label for="imageURL">Image URL</label>
-        <input type="text" name="imageURL" id="imageURL" value="<%= product.imageURL %>">
+        <input
+          class="<%= errors.find(err => err.param === 'imageURL') ? 'invalid' : '' %>"
+          type="text"
+          name="imageURL"
+          id="imageURL"
+          value="<%= product.imageURL %>">
       </div>
       <div class="form-control">
         <label for="price">Price</label>
-        <input type="number" name="price" id="price" step="0.01" value="<%= product.price %>">
+        <input
+          class="<%= errors.find(err => err.param === 'price') ? 'invalid' : '' %>"
+          type="number"
+          name="price"
+          id="price"
+          step="0.01"
+          value="<%= product.price %>">
       </div>
       <div class="form-control">
         <label for="description">Description</label>
-        <textarea name="description" id="description" rows="5"><%= product.description %></textarea>
+        <textarea
+          class="<%= errors.find(err => err.param === 'description') ? 'invalid' : '' %>"
+          name="description"
+          id="description"
+          rows="5"><%= product.description %></textarea>
       </div>
       <% if (editing) { %>
       <input type="hidden" name="_id" value="<%= product._id %>">
