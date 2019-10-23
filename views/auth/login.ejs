@@ -15,7 +15,12 @@
     <form class="login-form" action="/login" method="POST">
       <div class="form-control">
         <label for="email">E-mail</label>
-        <input type="email" name="email" id="email" value="<%= inputEmail %>">
+        <input
+          class="<%= inputEmail ? 'invalid' : '' %>"
+          type="email"
+          name="email"
+          id="email"
+          value="<%= inputEmail %>">
       </div>
       <div class="form-control">
         <label for="password">Password</label>
