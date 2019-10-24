@@ -14,7 +14,7 @@ const renderEdit = (res, product, editing, errors, status = 200) => {
 
 exports.getAddProduct = (req, res) => renderEdit(res, {}, false, []);
 
-exports.postAddProduct = (req, res) => {
+exports.postAddProduct = (req, res, next) => {
   const product = { userId: req.user };
   ['title', 'imageURL', 'price', 'description'].forEach((prop) => {
     product[prop] = req.body[prop];
@@ -25,7 +25,11 @@ exports.postAddProduct = (req, res) => {
   }
   return new Product(product).save()
     .then(() => res.redirect('/'))
-    .catch(() => res.redirect('/500'));
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      next(error);
+    });
 };
 
 exports.getProducts = (req, res) => Product

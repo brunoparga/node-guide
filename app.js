@@ -10,6 +10,7 @@ const session = require('./middleware/session');
 const setUser = require('./middleware/set-user');
 const setLocals = require('./middleware/set-locals');
 const routes = require('./routes/routes');
+const errorHandler = require('./middleware/error');
 
 const app = express();
 app.set('view engine', 'ejs');
@@ -22,6 +23,7 @@ app.use(flash());
 app.use(setUser);
 app.use(setLocals);
 app.use(routes);
+app.use(errorHandler);
 
 mongoose.connect(process.env.MONGODB_URI,
   { useNewUrlParser: true, useUnifiedTopology: true })
