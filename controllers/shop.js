@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const Product = require('../models/product');
 const Order = require('../models/order');
 const renderError = require('../helpers/render-error');
@@ -92,4 +94,28 @@ exports.getOrders = (req, res, next) => {
       });
     })
     .catch((err) => renderError(err, next));
+};
+
+exports.getInvoice = (req, res, next) => {
+  Order.findById(req.params.orderId)
+    .then((order) => {
+      if (!order) {
+        next(new Error('Order not found.'));
+      } else if (order.user.userId.toString() !== req.user._id.toString()) {
+        next(new Error('Unauthorized user.'));
+      } else {
+        const invoiceName = `invoice-${req.params.orderId}.pdf`;
+        const invoicePath = path.join('data', 'invoices', invoiceName);
+        fs.readFile(invoicePath, (err, data) => {
+          if (err) {
+            next(err);
+          } else {
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `inline; filename="${invoiceName}"`);
+            res.send(data);
+          }
+        });
+      }
+    })
+    .catch((err) => next(err));
 };
