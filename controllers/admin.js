@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
 const Product = require('../models/product');
+const renderError = require('../helpers/render-error');
 
 // TODO: improve this with Object.assign & possibly other functions
 const renderEdit = (res, product, editing, errors, status = 200) => {
@@ -25,14 +26,10 @@ exports.postAddProduct = (req, res, next) => {
   }
   return new Product(product).save()
     .then(() => res.redirect('/'))
-    .catch((err) => {
-      const error = new Error(err);
-      error.httpStatusCode = 500;
-      next(error);
-    });
+    .catch((err) => renderError(err, next));
 };
 
-exports.getProducts = (req, res) => Product
+exports.getProducts = (req, res, next) => Product
   .find({ userId: req.user })
   .then((products) => {
     res.render('admin/products', {
@@ -40,18 +37,22 @@ exports.getProducts = (req, res) => Product
       pageTitle: 'Shop',
       path: '/admin/products',
     });
-  });
+  })
+  .catch((err) => renderError(err, next));
 
-exports.getEditProduct = (req, res) => Product
+exports.getEditProduct = (req, res, next) => Product
   .findById(req.params.productId)
   .then((product) => {
     if (!product) {
-      return res.redirect('/');
+      return renderError({
+        errmsg: 'Product could not be retrieved from the database. Please try again.',
+      }, next);
     }
     return renderEdit(res, product, true, []);
-  });
+  })
+  .catch((err) => renderError(err, next));
 
-exports.postEditProduct = (req, res) => Product
+exports.postEditProduct = (req, res, next) => Product
   .findById(req.body._id)
   .then((product) => {
     if (product.userId.toString() === req.user._id.toString()) {
@@ -64,12 +65,18 @@ exports.postEditProduct = (req, res) => Product
         return renderEdit(res, updatedProduct, true, errors, 422);
       }
       return updatedProduct.save()
-        .then(() => res.redirect('/admin/products'));
+        .then(() => res.redirect('/admin/products'))
+        .catch((err) => renderError(err, next));
     }
-    return res.redirect('/');
-  });
+    return renderError({
+      errmsg: 'Attempt to edit product not owned by user',
+    }, next);
+  })
+  .catch((err) => renderError(err, next));
 
-exports.postDeleteProduct = (req, res) => {
+
+exports.postDeleteProduct = (req, res, next) => {
   Product.deleteOne({ _id: req.body._id, userId: req.user._id })
-    .then(() => res.redirect('/admin/products'));
+    .then(() => res.redirect('/admin/products'))
+    .catch((err) => renderError(err, next));
 };

@@ -4,8 +4,10 @@ const bcrypt = require('bcryptjs');
 const mailer = require('@sendgrid/mail');
 const { validationResult } = require('express-validator');
 
-mailer.setApiKey(process.env.SENDGRID_API_KEY);
 const User = require('../models/user');
+const renderError = require('../helpers/render-error');
+
+mailer.setApiKey(process.env.SENDGRID_API_KEY);
 
 const SIGNUP = {
   view: 'auth/signup',
@@ -34,7 +36,7 @@ const render = (page, res, errorMessage, inputEmail, status = 200) => {
 
 exports.getSignup = (req, res) => render(SIGNUP, res, req.flash('error')[0], '');
 
-exports.postSignup = (req, res) => {
+exports.postSignup = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     let inputEmail;
@@ -61,12 +63,13 @@ exports.postSignup = (req, res) => {
         html: '<h1>Hi there!!!!</h1>',
       });
       res.redirect('/login');
-    });
+    })
+    .catch((err) => renderError(err, next));
 };
 
 exports.getLogin = (req, res) => render(LOGIN, res, req.flash('error')[0], '');
 
-exports.postLogin = (req, res) => {
+exports.postLogin = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     let inputEmail;
@@ -90,15 +93,17 @@ exports.postLogin = (req, res) => {
             return req.session.save(() => res.redirect('/'));
           }
           return render(LOGIN, res, 'Invalid email or password.', email, 422);
-        });
-    });
+        })
+        .catch((err) => renderError(err, next));
+    })
+    .catch((err) => renderError(err, next));
 };
 
 exports.getReset = (req, res) => render(RESET, res, req.flash('error')[0], '');
 
-exports.postReset = (req, res) => {
-  crypto.randomBytes(32, (err, buffer) => {
-    if (err) {
+exports.postReset = (req, res, next) => {
+  crypto.randomBytes(32, (error, buffer) => {
+    if (error) {
       return render(RESET, res, 'Please try again.', '');
     }
     const token = buffer.toString('hex');
@@ -127,11 +132,12 @@ exports.postReset = (req, res) => {
             SuperStore.com
           `,
         });
-      });
+      })
+      .catch((err) => renderError(err, next));
   });
 };
 
-exports.getNewPassword = (req, res) => {
+exports.getNewPassword = (req, res, next) => {
   const { token } = req.params;
   User
     .findOne({
@@ -140,8 +146,9 @@ exports.getNewPassword = (req, res) => {
     })
     .then((user) => {
       if (!user) {
-        req.flash('error', 'Invalid recovery token.');
-        res.redirect('/');
+        renderError({
+          errmsg: 'Reset token not found or expired. Please try again.',
+        }, next);
       } else {
         res.render('auth/new-password', {
           path: '/new-password',
@@ -151,10 +158,11 @@ exports.getNewPassword = (req, res) => {
           resetToken: token,
         });
       }
-    });
+    })
+    .catch((err) => renderError(err, next));
 };
 
-exports.postNewPassword = (req, res) => {
+exports.postNewPassword = (req, res, next) => {
   const {
     _id, newPassword, confirmPassword, resetToken,
   } = req.body;
@@ -179,7 +187,8 @@ exports.postNewPassword = (req, res) => {
       updatedUser.resetTokenExpiration = undefined;
       return updatedUser.save();
     })
-    .then(() => res.redirect('/login'));
+    .then(() => res.redirect('/login'))
+    .catch((err) => renderError(err, next));
 };
 
 exports.postLogout = (req, res) => {
