@@ -8,7 +8,11 @@ module.exports = [
     .withMessage('Product title must be at least 3 characters long.')
     .trim(),
   body('imageURL', 'URL must be valid.').isURL(),
-  body('price', 'Price must be a number with cents.').isFloat(),
+  body('price')
+    .isDecimal({ decimal_digits: '2' })
+    .withMessage('Price must be a value with cents.')
+    .isFloat({ gt: 0.0 })
+    .withMessage('Price must be positive.'),
   body('description', 'Description must be at least 6 characters long.')
     .isLength({ min: 6, max: 400 }).trim(),
 ];
