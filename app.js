@@ -28,6 +28,7 @@ const fileFilter = (req, file, cb) => cb(null,
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(multer({ storage, fileFilter }).single('image'));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use(session);
 app.use(csrfProtection());
 app.use(flash());

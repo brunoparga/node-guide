@@ -13,17 +13,26 @@ const renderEdit = (res, product, editing, errors, status = 200) => {
   });
 };
 
+const setProduct = (product, req) => {
+  const result = product;
+  ['title', 'price', 'description'].forEach((prop) => {
+    result[prop] = req.body[prop];
+  });
+  return result;
+};
+
 exports.getAddProduct = (req, res) => renderEdit(res, {}, false, []);
 
 exports.postAddProduct = (req, res, next) => {
-  const product = { userId: req.user };
-  ['title', 'imageURL', 'price', 'description'].forEach((prop) => {
-    product[prop] = req.body[prop];
-  });
+  const product = setProduct({ userId: req.user }, req);
   const errors = validationResult(req).array();
+  if (!req.file) {
+    errors.push({ msg: 'Attached file is not an image.' });
+  }
   if (errors.length > 0) {
     return renderEdit(res, product, false, errors, 422);
   }
+  product.imageURL = req.file.path;
   return new Product(product).save()
     .then(() => res.redirect('/'))
     .catch((err) => renderError(err, next));
@@ -56,13 +65,13 @@ exports.postEditProduct = (req, res, next) => Product
   .findById(req.body._id)
   .then((product) => {
     if (product.userId.toString() === req.user._id.toString()) {
-      const updatedProduct = product;
-      ['title', 'imageURL', 'price', 'description'].forEach((prop) => {
-        updatedProduct[prop] = req.body[prop];
-      });
+      const updatedProduct = setProduct(product, req);
       const errors = validationResult(req).array();
       if (errors.length > 0) {
         return renderEdit(res, updatedProduct, true, errors, 422);
+      }
+      if (req.file) {
+        updatedProduct.imageURL = req.file.path;
       }
       return updatedProduct.save()
         .then(() => res.redirect('/admin/products'))
