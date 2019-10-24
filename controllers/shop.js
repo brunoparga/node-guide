@@ -96,26 +96,28 @@ exports.getOrders = (req, res, next) => {
     .catch((err) => renderError(err, next));
 };
 
+const streamInvoice = (req, res) => {
+  const invoiceName = `invoice-${req.params.orderId}.pdf`;
+  const invoicePath = path.join('data', 'invoices', invoiceName);
+  const file = fs.createReadStream(invoicePath);
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition',
+    `inline; filename="${invoiceName}"`);
+  file.pipe(res);
+};
+
+const validateInvoiceRequest = (order, req, res, next) => {
+  if (!order) {
+    next(new Error('Order not found.'));
+  } else if (order.user.userId.toString() !== req.user._id.toString()) {
+    next(new Error('Unauthorized user.'));
+  } else {
+    streamInvoice(req, res);
+  }
+};
+
 exports.getInvoice = (req, res, next) => {
   Order.findById(req.params.orderId)
-    .then((order) => {
-      if (!order) {
-        next(new Error('Order not found.'));
-      } else if (order.user.userId.toString() !== req.user._id.toString()) {
-        next(new Error('Unauthorized user.'));
-      } else {
-        const invoiceName = `invoice-${req.params.orderId}.pdf`;
-        const invoicePath = path.join('data', 'invoices', invoiceName);
-        fs.readFile(invoicePath, (err, data) => {
-          if (err) {
-            next(err);
-          } else {
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', `inline; filename="${invoiceName}"`);
-            res.send(data);
-          }
-        });
-      }
-    })
+    .then((order) => validateInvoiceRequest(order, req, res, next))
     .catch((err) => next(err));
 };
