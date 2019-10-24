@@ -7,7 +7,6 @@ module.exports = [
     .isLength({ min: 3 })
     .withMessage('Product title must be at least 3 characters long.')
     .trim(),
-  body('imageURL', 'URL must be valid.').isURL(),
   body('price')
     .isDecimal({ decimal_digits: '2' })
     .withMessage('Price must be a value with cents.')
