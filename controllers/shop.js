@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const PDFDocument = require('pdfkit');
+
 const Product = require('../models/product');
 const Order = require('../models/order');
 const renderError = require('../helpers/render-error');
@@ -96,14 +98,44 @@ exports.getOrders = (req, res, next) => {
     .catch((err) => renderError(err, next));
 };
 
-const streamInvoice = (req, res) => {
+const addProductsToPDF = (order, pdfDoc) => {
+  let total = 0;
+  order.products.forEach((product) => {
+    const { title, price } = product.product;
+    const subtotal = product.quantity * price;
+    total += subtotal;
+    pdfDoc.text(`${title}: ${product.quantity} x $${price} = ${subtotal}`);
+  });
+  pdfDoc.text(`\nTOTAL: $${total}`);
+  return pdfDoc;
+};
+
+const createPDF = (order) => {
+  let pdfDoc = new PDFDocument();
+  pdfDoc.fontSize(26).text('INVOICE');
+  pdfDoc.text('-------------------------------------------').fontSize(14);
+  pdfDoc = addProductsToPDF(order, pdfDoc);
+  return pdfDoc;
+};
+
+const saveInvoice = (pdfDoc, req) => {
   const invoiceName = `invoice-${req.params.orderId}.pdf`;
   const invoicePath = path.join('data', 'invoices', invoiceName);
-  const file = fs.createReadStream(invoicePath);
+  pdfDoc.pipe(fs.createWriteStream(invoicePath));
+  pdfDoc.end();
+};
+
+const streamInvoice = (pdfDoc, req, res) => {
   res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition',
-    `inline; filename="${invoiceName}"`);
-  file.pipe(res);
+  res.setHeader('Content-Disposition', `inline; filename="${req.params.orderId}"`);
+  pdfDoc.pipe(res);
+  pdfDoc.end();
+};
+
+const sendInvoice = (order, req, res) => {
+  const pdfDoc = createPDF(order);
+  saveInvoice(pdfDoc, req);
+  streamInvoice(pdfDoc, req, res);
 };
 
 const validateInvoiceRequest = (order, req, res, next) => {
@@ -112,7 +144,7 @@ const validateInvoiceRequest = (order, req, res, next) => {
   } else if (order.user.userId.toString() !== req.user._id.toString()) {
     next(new Error('Unauthorized user.'));
   } else {
-    streamInvoice(req, res);
+    sendInvoice(order, req, res);
   }
 };
 
