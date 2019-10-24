@@ -5,7 +5,7 @@ const Product = require('../models/product');
 const renderEdit = (res, product, editing, errors, status = 200) => {
   res.status(status).render('admin/edit-product', {
     pageTitle: (editing ? 'Edit Product' : 'Add Product'),
-    path: '/admin/edit-product',
+    path: `/admin/${editing ? 'edit' : 'add'}-product`,
     product,
     editing,
     errors,
@@ -24,7 +24,8 @@ exports.postAddProduct = (req, res) => {
     return renderEdit(res, product, false, errors, 422);
   }
   return new Product(product).save()
-    .then(() => res.redirect('/'));
+    .then(() => res.redirect('/'))
+    .catch(() => res.redirect('/500'));
 };
 
 exports.getProducts = (req, res) => Product
