@@ -86,16 +86,17 @@ exports.postEditProduct = (req, res, next) => Product
   .catch((err) => renderError(err, next));
 
 
-exports.postDeleteProduct = (req, res, next) => {
-  Product.findOne({ _id: req.body._id, userId: req.user._id })
+exports.deleteProduct = (req, res, next) => {
+  Product.findOne({ _id: req.params._id, userId: req.user._id })
     .then((product) => {
       if (!product) {
         next({ msg: 'Product not found.' });
       } else {
         deleteFile(product.imageURL);
         product.delete()
-          .then(() => res.redirect('/admin/products'))
-          .catch((err) => renderError(err, next));
+          .then(() => res.status(200).json({ message: 'Success!' }))
+          .catch(() => res.status(500)
+            .json({ message: 'Deleting product failed.' }));
       }
     });
 };
