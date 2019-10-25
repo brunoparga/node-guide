@@ -6,25 +6,61 @@ const Product = require('../models/product');
 const Order = require('../models/order');
 const renderError = require('../helpers/render-error');
 
-exports.getIndex = (_req, res, next) => {
-  Product.find()
+const ITEMS_PER_PAGE = 3;
+
+exports.getIndex = (req, res, next) => {
+  const currentPage = Number.parseInt(req.query.page, 10) || 1;
+  let productCount;
+
+  Product.find().countDocuments()
+    .then((count) => {
+      productCount = count;
+      return Product
+        .find()
+        .skip((currentPage - 1) * ITEMS_PER_PAGE)
+        .limit(ITEMS_PER_PAGE);
+    })
     .then((products) => {
       res.render('shop/index', {
         prods: products,
         pageTitle: 'Index',
         path: '/',
+        productCount,
+        currentPage,
+        hasNextPage: (ITEMS_PER_PAGE * currentPage < productCount),
+        hasPreviousPage: (currentPage > 1),
+        nextPage: (currentPage + 1),
+        previousPage: (currentPage - 1),
+        lastPage: Math.ceil(productCount / ITEMS_PER_PAGE),
       });
     })
     .catch((err) => renderError(err, next));
 };
 
-exports.getProducts = (_req, res, next) => {
-  Product.find()
+exports.getProducts = (req, res, next) => {
+  const currentPage = Number.parseInt(req.query.page, 10) || 1;
+  let productCount;
+
+  Product.find().countDocuments()
+    .then((count) => {
+      productCount = count;
+      return Product
+        .find()
+        .skip((currentPage - 1) * ITEMS_PER_PAGE)
+        .limit(ITEMS_PER_PAGE);
+    })
     .then((products) => {
       res.render('shop/product-list', {
-        prods: products,
+        products,
         pageTitle: 'Shop',
         path: '/products',
+        productCount,
+        currentPage,
+        hasNextPage: (ITEMS_PER_PAGE * currentPage < productCount),
+        hasPreviousPage: (currentPage > 1),
+        nextPage: (currentPage + 1),
+        previousPage: (currentPage - 1),
+        lastPage: Math.ceil(productCount / ITEMS_PER_PAGE),
       });
     })
     .catch((err) => renderError(err, next));
