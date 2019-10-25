@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 const Product = require('../models/product');
 const renderError = require('../helpers/render-error');
+const deleteFile = require('../helpers/delete-file');
 
 // TODO: improve this with Object.assign & possibly other functions
 const renderEdit = (res, product, editing, errors, status = 200) => {
@@ -71,6 +72,7 @@ exports.postEditProduct = (req, res, next) => Product
         return renderEdit(res, updatedProduct, true, errors, 422);
       }
       if (req.file) {
+        deleteFile(product.imageURL);
         updatedProduct.imageURL = req.file.path;
       }
       return updatedProduct.save()
@@ -85,7 +87,15 @@ exports.postEditProduct = (req, res, next) => Product
 
 
 exports.postDeleteProduct = (req, res, next) => {
-  Product.deleteOne({ _id: req.body._id, userId: req.user._id })
-    .then(() => res.redirect('/admin/products'))
-    .catch((err) => renderError(err, next));
+  Product.findOne({ _id: req.body._id, userId: req.user._id })
+    .then((product) => {
+      if (!product) {
+        next({ msg: 'Product not found.' });
+      } else {
+        deleteFile(product.imageURL);
+        product.delete()
+          .then(() => res.redirect('/admin/products'))
+          .catch((err) => renderError(err, next));
+      }
+    });
 };
