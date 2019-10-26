@@ -30,11 +30,10 @@ app.use(multer({ storage, fileFilter }).single('image'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use(session);
+app.use(csrfProtection());
 app.use(flash());
 app.use(setUser);
-app.use(setLocals.auth);
-app.use(csrfProtection());
-app.use(setLocals.csrf);
+app.use(setLocals);
 app.use(routes);
 app.use(errorHandler);
 
