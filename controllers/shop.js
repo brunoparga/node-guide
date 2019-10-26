@@ -154,6 +154,7 @@ const createOrder = (user) => {
 };
 
 exports.getCheckoutSuccess = (req, res, next) => {
+  // TODO: verify that user has really just placed an order
   req.user.populate('cart.items.productId').execPopulate()
     .then((user) => createOrder(user).save())
     .then(() => req.user.clearCart())
