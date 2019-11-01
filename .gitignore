@@ -4,3 +4,4 @@ data/
 .env
 /images
 *.log
+server.*

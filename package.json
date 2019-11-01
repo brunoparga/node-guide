@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "Max Schwarzmueller's NodeJS Complete Guide",
   "main": "app.js",
+  "engines": {
+    "node": "12.13.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js",

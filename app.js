@@ -1,7 +1,6 @@
 require('dotenv').config();
 const path = require('path');
 const fs = require('fs');
-const https = require('https');
 
 const express = require('express');
 const helmet = require('helmet');
@@ -33,9 +32,6 @@ const fileFilter = (req, file, cb) => cb(null,
 
 const stream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' });
 
-const key = fs.readFileSync('server.key');
-const cert = fs.readFileSync('server.cert');
-
 app.use(helmet());
 app.use(compression());
 app.use(morgan('combined', { stream }));
@@ -53,4 +49,4 @@ app.use(errorHandler);
 
 mongoose.connect(process.env.MONGODB_URI,
   { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => https.createServer({ key, cert }, app).listen(process.env.PORT || 3000));
+  .then(() => app.listen(process.env.PORT || 3000));
