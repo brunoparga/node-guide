@@ -1,11 +1,15 @@
 require('dotenv').config();
 const express = require('express');
+const helmet = require('helmet');
+const compression = require('compression');
 const bodyParser = require('body-parser');
 const path = require('path');
 const csrfProtection = require('csurf');
 const flash = require('connect-flash');
 const mongoose = require('mongoose');
 const multer = require('multer');
+const morgan = require('morgan');
+const fs = require('fs');
 
 const session = require('./middleware/session');
 const setUser = require('./middleware/set-user');
@@ -25,6 +29,11 @@ const storage = multer.diskStorage({
 const fileFilter = (req, file, cb) => cb(null,
   ['image/png', 'image/jpg', 'image/jpeg'].includes(file.mimetype));
 
+const stream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' });
+
+app.use(helmet());
+app.use(compression());
+app.use(morgan('combined', { stream }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(multer({ storage, fileFilter }).single('image'));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -39,4 +48,4 @@ app.use(errorHandler);
 
 mongoose.connect(process.env.MONGODB_URI,
   { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => app.listen(3000));
+  .then(() => app.listen(process.env.PORT || 3000));
