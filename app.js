@@ -1,15 +1,17 @@
 require('dotenv').config();
+const path = require('path');
+const fs = require('fs');
+const https = require('https');
+
 const express = require('express');
 const helmet = require('helmet');
 const compression = require('compression');
 const bodyParser = require('body-parser');
-const path = require('path');
 const csrfProtection = require('csurf');
 const flash = require('connect-flash');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const morgan = require('morgan');
-const fs = require('fs');
 
 const session = require('./middleware/session');
 const setUser = require('./middleware/set-user');
@@ -31,6 +33,9 @@ const fileFilter = (req, file, cb) => cb(null,
 
 const stream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' });
 
+const key = fs.readFileSync('server.key');
+const cert = fs.readFileSync('server.cert');
+
 app.use(helmet());
 app.use(compression());
 app.use(morgan('combined', { stream }));
@@ -48,4 +53,4 @@ app.use(errorHandler);
 
 mongoose.connect(process.env.MONGODB_URI,
   { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => app.listen(process.env.PORT || 3000));
+  .then(() => https.createServer({ key, cert }, app).listen(process.env.PORT || 3000));
