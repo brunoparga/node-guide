@@ -22,81 +22,95 @@ const setProduct = (product, req) => {
   return result;
 };
 
+const editProduct = async (req, res, product) => {
+  const updatedProduct = setProduct(product, req);
+  const errors = validationResult(req).array();
+  if (errors.length > 0) {
+    renderEdit(res, updatedProduct, true, errors, 422);
+  } else {
+    // Only delete existing image if a new one was provided
+    if (req.file) {
+      deleteFile(product.imageURL);
+      updatedProduct.imageURL = req.file.path;
+    }
+    await updatedProduct.save();
+    res.redirect('/admin/products');
+  }
+};
+
 exports.getAddProduct = (req, res) => renderEdit(res, {}, false, []);
 
-exports.postAddProduct = (req, res, next) => {
+exports.postAddProduct = async (req, res, next) => {
   const product = setProduct({ userId: req.user }, req);
   const errors = validationResult(req).array();
   if (!req.file) {
     errors.push({ msg: 'Attached file is not an image.' });
   }
   if (errors.length > 0) {
-    return renderEdit(res, product, false, errors, 422);
+    renderEdit(res, product, false, errors, 422);
+  } else {
+    product.imageURL = req.file.path;
+    try {
+      await new Product(product).save();
+      res.redirect('/');
+    } catch (err) {
+      renderError(err, next);
+    }
   }
-  product.imageURL = req.file.path;
-  return new Product(product).save()
-    .then(() => res.redirect('/'))
-    .catch((err) => renderError(err, next));
 };
 
-exports.getProducts = (req, res, next) => Product
-  .find({ userId: req.user })
-  .then((products) => {
+exports.getProducts = async (req, res, next) => {
+  try {
+    const products = await Product.find({ userId: req.user });
     res.render('admin/products', {
       products,
       pageTitle: 'Shop',
       path: '/admin/products',
     });
-  })
-  .catch((err) => renderError(err, next));
+  } catch (err) {
+    renderError(err, next);
+  }
+};
 
-exports.getEditProduct = (req, res, next) => Product
-  .findById(req.params.productId)
-  .then((product) => {
-    if (!product) {
-      return renderError({
+exports.getEditProduct = async (req, res, next) => {
+  try {
+    const product = await Product.findById(req.params.productId);
+    if (product) {
+      renderEdit(res, product, true, []);
+    } else {
+      renderError({
         errmsg: 'Product could not be retrieved from the database. Please try again.',
       }, next);
     }
-    return renderEdit(res, product, true, []);
-  })
-  .catch((err) => renderError(err, next));
+  } catch (err) {
+    renderError(err, next);
+  }
+};
 
-exports.postEditProduct = (req, res, next) => Product
-  .findById(req.body._id)
-  .then((product) => {
+exports.postEditProduct = async (req, res, next) => {
+  try {
+    const product = await Product.findById(req.body._id);
     if (product.userId.toString() === req.user._id.toString()) {
-      const updatedProduct = setProduct(product, req);
-      const errors = validationResult(req).array();
-      if (errors.length > 0) {
-        return renderEdit(res, updatedProduct, true, errors, 422);
-      }
-      if (req.file) {
-        deleteFile(product.imageURL);
-        updatedProduct.imageURL = req.file.path;
-      }
-      return updatedProduct.save()
-        .then(() => res.redirect('/admin/products'))
-        .catch((err) => renderError(err, next));
+      editProduct(req, res, product);
+    } else {
+      renderError({ errmsg: 'Attempt to edit product not owned by user' }, next);
     }
-    return renderError({
-      errmsg: 'Attempt to edit product not owned by user',
-    }, next);
-  })
-  .catch((err) => renderError(err, next));
+  } catch (err) {
+    renderError(err, next);
+  }
+};
 
-
-exports.deleteProduct = (req, res, next) => {
-  Product.findOne({ _id: req.params._id, userId: req.user._id })
-    .then((product) => {
-      if (!product) {
-        next({ msg: 'Product not found.' });
-      } else {
-        deleteFile(product.imageURL);
-        product.delete()
-          .then(() => res.status(200).json({ message: 'Success!' }))
-          .catch(() => res.status(500)
-            .json({ message: 'Deleting product failed.' }));
-      }
-    });
+exports.deleteProduct = async (req, res, next) => {
+  try {
+    const product = await Product.findOne({ _id: req.params._id, userId: req.user._id });
+    if (product) {
+      deleteFile(product.imageURL);
+      await product.delete();
+      res.status(200).json({ message: 'Success!' });
+    } else {
+      next({ msg: 'Product not found.' });
+    }
+  } catch (err) {
+    res.status(500).json({ message: 'Deleting product failed.' });
+  }
 };

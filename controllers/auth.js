@@ -34,135 +34,125 @@ const render = (page, res, errorMessage, inputEmail, status = 200) => {
   });
 };
 
-exports.getSignup = (req, res) => render(SIGNUP, res, req.flash('error')[0], '');
-
-exports.postSignup = (req, res, next) => {
+const validateSignup = (req, res, login = true) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     let inputEmail;
     if (errors.array().every((error) => error.param !== 'email')) {
       inputEmail = req.body.email;
     }
-    return render(SIGNUP, res, errors.array()[0].msg, inputEmail, 422);
+    render((login ? LOGIN : SIGNUP), res, errors.array()[0].msg, inputEmail, 422);
+    return false;
   }
+  return true;
+};
 
-  const { email, password } = req.body;
-  return bcrypt.hash(password, 12)
-    .then((hashedPassword) => new User({
-      email,
-      password: hashedPassword,
-      cart: {
-        items: [],
-      },
-    }).save())
-    .then(() => {
-      mailer.send({
-        to: email,
-        from: 'welcome@superstore.com',
-        subject: 'Welcome to the Amazon-Killer!',
-        html: '<h1>Hi there!!!!</h1>',
-      });
-      res.redirect('/login');
-    })
-    .catch((err) => renderError(err, next));
+exports.getSignup = (req, res) => render(SIGNUP, res, req.flash('error')[0], '');
+
+exports.postSignup = async (req, res, next) => {
+  const passedValidation = validateSignup(req, res, false);
+  if (!passedValidation) {
+    return;
+  }
+  const { email } = req.body;
+  let { password } = req.body;
+  try {
+    password = await bcrypt.hash(password, 12);
+    await new User({ email, password, cart: { items: [] } }).save();
+    await mailer.send({
+      to: email,
+      from: 'welcome@superstore.com',
+      subject: 'Welcome to the Amazon-Killer!',
+      html: '<h1>Hi there!!!!</h1>',
+    });
+    res.redirect('/login');
+  } catch (err) {
+    renderError(err, next);
+  }
 };
 
 exports.getLogin = (req, res) => render(LOGIN, res, req.flash('error')[0], '');
 
-exports.postLogin = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    let inputEmail;
-    if (errors.array().every((error) => error.param !== 'email')) {
-      inputEmail = req.body.email;
-    }
-    return render(LOGIN, res, errors.array()[0].msg, inputEmail, 422);
+exports.postLogin = async (req, res, next) => {
+  const passedValidation = validateSignup(req, res, false);
+  if (!passedValidation) {
+    return;
   }
-
   const { email, password } = req.body;
-  return User.findOne({ email })
-    .then((user) => {
-      if (!user) {
-        return render(LOGIN, res, 'Invalid email or password.', email, 422);
-      }
-      return bcrypt
-        .compare(password, user.password)
-        .then((match) => {
-          if (match) {
-            req.session.user = user;
-            return req.session.save(() => res.redirect('/'));
-          }
-          return render(LOGIN, res, 'Invalid email or password.', email, 422);
-        })
-        .catch((err) => renderError(err, next));
-    })
-    .catch((err) => renderError(err, next));
+  try {
+    const user = await User.findOne({ email });
+    if (user && await bcrypt.compare(password, user.password)) {
+      req.session.user = user;
+      req.session.save(() => res.redirect('/'));
+    } else {
+      render(LOGIN, res, 'Invalid email or password.', email, 422);
+    }
+  } catch (err) {
+    renderError(err, next);
+  }
 };
 
 exports.getReset = (req, res) => render(RESET, res, req.flash('error')[0], '');
 
 exports.postReset = (req, res, next) => {
-  crypto.randomBytes(32, (error, buffer) => {
+  crypto.randomBytes(32, async (error, buffer) => {
     if (error) {
-      return render(RESET, res, 'Please try again.', '');
+      return render(RESET, res, 'There was a server error; please try again.', '');
     }
     const token = buffer.toString('hex');
-    return User
-      .findOne({ email: req.body.email })
-      .then((user) => {
-        if (!user) {
-          return render(RESET, res, 'Email not found.', req.body.email, 422);
-        }
-        const newUser = user;
-        newUser.resetToken = token;
-        newUser.resetTokenExpiration = Date.now() + 3600000;
-        return newUser.save();
-      })
-      .then(() => {
-        res.redirect('/');
-        mailer.send({
-          to: req.body.email,
-          from: 'recovery@superstore.com',
-          subject: 'Recover your password',
-          html: `
+    try {
+      const user = await User.findOne({ email: req.body.email });
+      if (!user) {
+        return render(RESET, res, 'Email not found.', req.body.email, 422);
+      }
+      user.resetToken = token;
+      user.resetTokenExpiration = Date.now() + 3600000;
+      await user.save();
+      res.redirect('/');
+      return mailer.send({
+        to: req.body.email,
+        from: 'recovery@superstore.com',
+        subject: 'Recover your password',
+        html: `
             <p>Someone (likely you) requested a password reset for this email.</p>
             <p>Click <a href="http://localhost:3000/new-password/${token}">this link</a> to reset your password:</p>
 
             Cheers,<br>
             SuperStore.com
           `,
-        });
-      })
-      .catch((err) => renderError(err, next));
+      });
+    } catch (err) {
+      return renderError(err, next);
+    }
   });
 };
 
-exports.getNewPassword = (req, res, next) => {
+exports.getNewPassword = async (req, res, next) => {
   const { token } = req.params;
-  User
-    .findOne({
+  try {
+    const user = await User.findOne({
       resetToken: token,
       resetTokenExpiration: { $gt: Date.now() },
-    })
-    .then((user) => {
-      if (!user) {
-        renderError({
-          errmsg: 'Reset token not found or expired. Please try again.',
-        }, next);
-      } else {
-        res.render('auth/new-password', {
-          path: '/new-password',
-          pageTitle: 'New Password',
-          errorMessage: req.flash('error')[0],
-          _id: user._id.toString(),
-          resetToken: token,
-        });
-      }
-    })
-    .catch((err) => renderError(err, next));
+    });
+    if (user) {
+      res.render('auth/new-password', {
+        path: '/new-password',
+        pageTitle: 'New Password',
+        errorMessage: req.flash('error')[0],
+        _id: user._id.toString(),
+        resetToken: token,
+      });
+    } else {
+      renderError({
+        errmsg: 'Reset token not found or expired. Please try again.',
+      }, next);
+    }
+  } catch (err) {
+    renderError(err, next);
+  }
 };
 
-exports.postNewPassword = (req, res, next) => {
+exports.postNewPassword = async (req, res, next) => {
   const {
     _id, newPassword, confirmPassword, resetToken,
   } = req.body;
@@ -170,25 +160,22 @@ exports.postNewPassword = (req, res, next) => {
     req.flash('error', "The passwords don't match.");
     return res.redirect('/signup');
   }
-  let updatedUser;
-  return User
-    .findOne({
-      _id,
-      resetToken,
-      resetTokenExpiration: { $gt: Date.now() },
-    })
-    .then((user) => {
-      updatedUser = user;
-      return bcrypt.hash(newPassword, 12);
-    })
-    .then((hashedPassword) => {
-      updatedUser.password = hashedPassword;
-      updatedUser.resetToken = undefined;
-      updatedUser.resetTokenExpiration = undefined;
-      return updatedUser.save();
-    })
-    .then(() => res.redirect('/login'))
-    .catch((err) => renderError(err, next));
+  try {
+    const user = await User
+      .findOne({
+        _id,
+        resetToken,
+        resetTokenExpiration: { $gt: Date.now() },
+      });
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    user.password = hashedPassword;
+    user.resetToken = undefined;
+    user.resetTokenExpiration = undefined;
+    await user.save();
+    return res.redirect('/login');
+  } catch (err) {
+    return renderError(err, next);
+  }
 };
 
 exports.postLogout = (req, res) => {
