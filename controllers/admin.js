@@ -43,7 +43,7 @@ exports.getProducts = (req, res, next) => Product
   .find({ userId: req.user })
   .then((products) => {
     res.render('admin/products', {
-      prods: products,
+      products,
       pageTitle: 'Shop',
       path: '/admin/products',
     });
