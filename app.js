@@ -30,7 +30,7 @@ const storage = multer.diskStorage({
 const fileFilter = (req, file, cb) => cb(null,
   ['image/png', 'image/jpg', 'image/jpeg'].includes(file.mimetype));
 
-const stream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' });
+const stream = fs.createWriteStream(path.join(__dirname, 'data', 'access.log'), { flags: 'a' });
 
 app.use(helmet());
 app.use(compression());
