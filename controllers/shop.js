@@ -112,11 +112,13 @@ exports.getCheckout = async (req, res, next) => {
       currency: 'usd',
       quantity: p.quantity,
     }));
+    const localhost = 'http://localhost:3000';
+    const production = 'https://superduperstore.herokuapp.com';
     const stripeSession = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: lineItems,
-      success_url: 'http://localhost:3000/checkout/success',
-      cancel_url: 'http://localhost:3000/checkout/cancel',
+      success_url: `${process.env.NODE_ENV === 'production' ? production : localhost}/checkout/success`,
+      cancel_url: `${process.env.NODE_ENV === 'production' ? production : localhost}/checkout/cancel`,
     });
     const total = products.reduce(
       (subtotal, prod) => subtotal + prod.quantity * prod.productId.price, 0,
@@ -127,7 +129,6 @@ exports.getCheckout = async (req, res, next) => {
       products,
       total,
       sessionId: stripeSession.id,
-      env: process.env.NODE_ENV,
     });
   } catch (err) {
     renderError(err, next);
