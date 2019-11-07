@@ -6,9 +6,13 @@
   <%- include('../includes/navigation.ejs') %>
 
   <main>
-    <% if (products.length > 0) { %>
+    <header class="centered">
+      <h1>Welcome to SuperDuperStore!</h1>
+      <p>We currently have <strong><%= productCount %></strong> offers.</p>
+      <p>Here is one of the most popular ones - <a href="/products">see them all</a>!</p>
+    </header>
+    <% if (product) { %>
     <div class="grid">
-      <% for (let product of products) { %>
       <article class="card product-item">
         <header class="card__header">
           <h1 class="product__title"><%= product.title %></h1>
@@ -24,17 +28,13 @@
           <a href="/products/<%= product._id %>" class="btn">Details</a>
           <% if (isAuthenticated) { %>
           <%- include('../includes/add-to-cart.ejs', { product }) %>
-          <% } %>
         </div>
       </article>
       <% } %>
     </div>
-    <%- include('../includes/pagination.ejs', {
-      productCount, hasNextPage, hasPreviousPage,
-      nextPage, previousPage, lastPage, currentPage
-    }) %>
     <% } else { %>
-    <h1>No Products Found!</h1>
+    <h1>No products here yet...</h1>
+    <p>You can <a href="/login">log in</a> or <a href="/signup">sign up</a> and sell something!</p>
     <% } %>
   </main>
   <%- include('../includes/end.ejs') %>

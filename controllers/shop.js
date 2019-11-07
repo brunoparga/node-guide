@@ -21,16 +21,13 @@ const calculatePages = (productCount, currentPage) => ({
 });
 
 exports.getIndex = async (req, res, next) => {
-  const currentPage = Number.parseInt(req.query.page, 10) || 1;
   try {
     const productCount = await Product.find().countDocuments();
-    const products = await Product.find()
-      .skip((currentPage - 1) * ITEMS_PER_PAGE)
-      .limit(ITEMS_PER_PAGE);
+    const product = await Product.findOne();
     res.render('shop/index', {
-      ...calculatePages(productCount, currentPage),
-      products,
-      pageTitle: 'Index',
+      product,
+      productCount,
+      pageTitle: 'SuperDuperStore',
       path: '/',
     });
   } catch (err) {
