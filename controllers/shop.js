@@ -127,6 +127,7 @@ exports.getCheckout = async (req, res, next) => {
       products,
       total,
       sessionId: stripeSession.id,
+      env: process.env.NODE_ENV,
     });
   } catch (err) {
     renderError(err, next);
