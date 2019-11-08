@@ -1,7 +1,10 @@
 const { validationResult } = require('express-validator');
+const { uploader: cloudinary } = require('cloudinary');
+
 const Product = require('../models/product');
 const renderError = require('../helpers/render-error');
 const deleteFile = require('../helpers/delete-file');
+const dataURI = require('../helpers/datauri');
 
 // TODO: improve this with Object.assign & possibly other functions
 const renderEdit = (res, product, editing, errors, status = 200) => {
@@ -31,7 +34,9 @@ const editProduct = async (req, res, product) => {
     // Only delete existing image if a new one was provided
     if (req.file) {
       deleteFile(product.imageURL);
-      updatedProduct.imageURL = req.file.path;
+      const file = dataURI(req).content;
+      const result = await cloudinary.upload(file);
+      updatedProduct.imageURL = result.secure_url;
     }
     await updatedProduct.save();
     res.redirect('/admin/products');
@@ -49,8 +54,10 @@ exports.postAddProduct = async (req, res, next) => {
   if (errors.length > 0) {
     renderEdit(res, product, false, errors, 422);
   } else {
-    product.imageURL = req.file.path;
     try {
+      const file = dataURI(req).content;
+      const result = await cloudinary.upload(file);
+      product.imageURL = result.secure_url;
       await new Product(product).save();
       res.redirect('/');
     } catch (err) {

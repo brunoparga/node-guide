@@ -1,7 +1,13 @@
-const fs = require('fs');
+const { uploader: cloudinary } = require('cloudinary');
 
-const deleteFile = (filePath) => {
-  fs.unlink(filePath, (err) => { if (err) { throw err; } });
+const findId = (imageURL) => {
+  const regex = /[^/]\/(?<publicId>\w+)\.(png|jpg|jpeg)$/;
+  return imageURL.match(regex).groups.publicId;
+};
+
+const deleteFile = (imageURL) => {
+  const file = findId(imageURL);
+  cloudinary.destroy(file, { invalidate: true }, () => { });
 };
 
 module.exports = deleteFile;
