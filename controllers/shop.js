@@ -171,15 +171,17 @@ exports.getOrders = async (req, res, next) => {
   }
 };
 
+const setCents = (value) => parseFloat(value).toFixed(2);
+
 const addProductsToPDF = (order, pdfDoc) => {
   let total = 0;
   order.products.forEach((product) => {
     const { title, price } = product.product;
     const subtotal = product.quantity * price;
     total += subtotal;
-    pdfDoc.text(`${title}: ${product.quantity} x $${price} = ${subtotal}`);
+    pdfDoc.text(`${title}: ${product.quantity} x $${setCents(price)} = $${setCents(subtotal)}`);
   });
-  pdfDoc.text(`\nTOTAL: $${total}`);
+  pdfDoc.text(`\nTOTAL: $${setCents(total)}`);
   return pdfDoc;
 };
 
