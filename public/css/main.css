@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,700');
+@import url('https://fonts.googleapis.com/css?family=Work+Sans:400,700&display=swap');
 
 html {
   height: 100%;
@@ -11,7 +11,8 @@ html {
 body {
   padding: 0;
   margin: 0;
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'Work Sans', sans-serif;
+  font-display: swap;
   background: linear-gradient(to right, #a0d0d8, white 10% 90%, #a0d0d8);
   display: flex;
   flex-direction: column;
