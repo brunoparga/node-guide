@@ -1,3 +1,5 @@
+@use 'colors';
+
 * {
   box-sizing: border-box;
 }
@@ -9,9 +11,9 @@ html {
 body {
   padding: 0;
   margin: 0;
-  font-family: "Work Sans", sans-serif;
+  font-family: 'Work Sans', sans-serif;
   font-display: swap;
-  background: linear-gradient(to right, #a0d0d8, white 10% 90%, #a0d0d8);
+  background: linear-gradient(to right, colors.$background, white 10% 90%, colors.$background);
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -31,7 +33,7 @@ form {
 
 a {
   text-decoration: none;
-  color: #00695c;
+  color: colors.$main;
 }
 
 .centered {
@@ -49,7 +51,7 @@ a {
 .main-header {
   width: 100%;
   height: 3.5rem;
-  background-color: #00695c;
+  background-color: colors.$main;
   padding: 0 1.5rem;
   display: flex;
   align-items: center;
@@ -82,7 +84,7 @@ a {
   background: transparent;
   border: none;
   text-decoration: none;
-  color: white;
+  color: colors.$nav-default;
   cursor: pointer;
 }
 
@@ -91,7 +93,7 @@ a {
 .main-header__item a.active,
 .main-header__item button:hover,
 .main-header__item button:active {
-  color: #ffeb3b;
+  color: colors.$nav-highlight;
 }
 
 .mobile-nav {
@@ -142,8 +144,8 @@ a {
 .mobile-nav__item a.active,
 .mobile-nav__item button:hover,
 .mobile-nav__item button:active {
-  background: #00695c;
-  color: white;
+  background: colors.$main;
+  color: colors.$nav-default;
   border-radius: 3px;
 }
 
@@ -163,8 +165,8 @@ a {
 
 #side-menu-toggle:active,
 #side-menu-toggle:hover {
-  color: #ffeb3b;
-  border-color: #ffeb3b;
+  color: colors.$nav-highlight;
+  border-color: colors.$nav-highlight;
 }
 
 .backdrop {
@@ -186,7 +188,7 @@ a {
 }
 
 .card {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
+  box-shadow: 0 2px 8px colors.$shadow;
 }
 
 .card__header,
@@ -224,8 +226,8 @@ a {
   padding: 0.25rem 1rem;
   text-decoration: none;
   font: inherit;
-  border: 1px solid #00695c;
-  color: #00695c;
+  border: 1px solid colors.$main;
+  color: colors.$main;
   background: white;
   border-radius: 3px;
   cursor: pointer;
@@ -233,35 +235,35 @@ a {
 
 .btn:hover,
 .btn:active {
-  background-color: #00695c;
+  background-color: colors.$main;
   color: white;
 }
 
 .btn.danger {
-  color: red;
-  border-color: red;
+  color: colors.$danger;
+  border-color: colors.$danger;
 }
 
 .btn.danger:hover,
 .btn.danger:active {
-  background: red;
+  background: colors.$danger;
   color: white;
 }
 
 .user-message {
   margin: auto;
   width: 90%;
-  border: 1px solid #4771FA;
-  background: #B9C9FF;
+  border: 1px solid colors.$flash-border;
+  background: colors.$flash-bg;
   padding: 1rem;
   border-radius: 3px;
   text-align: center;
 }
 
 .user-message--error {
-  border-color: red;
-  background: #ffb4b4;
-  color: red;
+  border-color: colors.$flash-error-main;
+  background: colors.$flash-error-bg;
+  color: colors.$flash-error-main;
 }
 
 .pagination {
@@ -271,16 +273,16 @@ a {
 
 .pagination a {
   text-decoration: none;
-  color: #00695c;
+  color: colors.$main;
   padding: 0.5rem;
-  border: 1px solid #00695c;
+  border: 1px solid colors.$main;
   margin: 0 0.5rem;
 }
 
 .pagination a:hover,
 .pagination a:active,
 .pagination a.active {
-  background: #00695c;
+  background: colors.$main;
   color: white;
 }
 
@@ -297,5 +299,3 @@ a {
     width: 30rem;
   }
 }
-
-/*# sourceMappingURL=main.css.map */

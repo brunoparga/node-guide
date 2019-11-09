@@ -1,3 +1,5 @@
+@use 'colors';
+
 .orders {
   list-style: none;
   padding: 0;
@@ -24,8 +26,6 @@
 .orders__products-item {
   margin: 0.5rem 0;
   padding: 0.5rem;
-  border: 1px solid #00695c;
-  color: #00695c;
+  border: 1px solid colors.$main;
+  color: colors.$main;
 }
-
-/*# sourceMappingURL=orders.css.map */

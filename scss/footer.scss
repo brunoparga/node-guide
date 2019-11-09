@@ -1,0 +1,15 @@
+@use 'colors';
+
+.footer {
+  background: colors.$footer-bg;
+  color: colors.$footer-text;
+  width: 100vw;
+  text-align: center;
+  height: 3.5rem;
+  flex-shrink: 0;
+
+  a {
+    color: colors.$footer-link;
+    text-decoration: none;
+  }
+}

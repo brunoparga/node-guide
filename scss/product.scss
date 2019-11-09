@@ -1,3 +1,5 @@
+@use 'colors';
+
 .product-form {
   width: 20rem;
   max-width: 90%;
@@ -18,12 +20,10 @@
 
 .product__price {
   text-align: center;
-  color: #4d4d4d;
+  color: colors.$darker-gray;
   margin-bottom: 0.5rem;
 }
 
 .product__description {
   text-align: center;
 }
-
-/*# sourceMappingURL=product.css.map */
