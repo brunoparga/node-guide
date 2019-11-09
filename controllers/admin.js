@@ -2,9 +2,9 @@ const { validationResult } = require('express-validator');
 const { uploader: cloudinary } = require('cloudinary');
 
 const Product = require('../models/product');
-const renderError = require('../helpers/render-error');
-const deleteFile = require('../helpers/delete-file');
-const dataURI = require('../helpers/datauri');
+const renderError = require('../services/render-error');
+const deleteFile = require('../services/delete-file');
+const dataURI = require('../services/datauri');
 
 // TODO: improve this with Object.assign & possibly other functions
 const renderEdit = (res, product, editing, errors, status = 200) => {

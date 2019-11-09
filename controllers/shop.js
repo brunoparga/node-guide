@@ -6,7 +6,7 @@ const stripe = require('stripe')(process.env.STRIPE_API_KEY);
 
 const Product = require('../models/product');
 const Order = require('../models/order');
-const renderError = require('../helpers/render-error');
+const renderError = require('../services/render-error');
 
 const ITEMS_PER_PAGE = 3;
 

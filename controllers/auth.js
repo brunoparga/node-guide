@@ -5,7 +5,7 @@ const mailer = require('@sendgrid/mail');
 const { validationResult } = require('express-validator');
 
 const User = require('../models/user');
-const renderError = require('../helpers/render-error');
+const renderError = require('../services/render-error');
 
 mailer.setApiKey(process.env.SENDGRID_API_KEY);
 
