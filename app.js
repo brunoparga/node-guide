@@ -25,7 +25,6 @@ app.use(compression());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(multer);
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use(session);
 app.use(csrfProtection());
 app.use(flash());

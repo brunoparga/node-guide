@@ -2,5 +2,4 @@ node_modules/
 data/
 /.vscode
 .env
-/images
 /.sass-cache
