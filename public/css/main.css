@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,700');
 
+html {
+  height: 100%;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -8,15 +12,18 @@ body {
   padding: 0;
   margin: 0;
   font-family: 'Open Sans', sans-serif;
-  background: linear-gradient(to right, #a0d0d8, white 10% 90%, #a0d0d8)
+  background: linear-gradient(to right, #a0d0d8, white 10% 90%, #a0d0d8);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
 main {
   padding: 1rem;
   margin: auto;
   max-width: 80vw;
-  height: calc(100vh - 7rem);
   background: white;
+  flex: 1 0 auto;
 }
 
 form {
@@ -47,6 +54,7 @@ a {
   padding: 0 1.5rem;
   display: flex;
   align-items: center;
+  flex: 0 0 auto;
 }
 
 .main-header__nav {
