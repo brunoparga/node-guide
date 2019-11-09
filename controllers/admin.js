@@ -6,14 +6,11 @@ const renderError = require('../services/render-error');
 const deleteFile = require('../services/delete-file');
 const dataURI = require('../services/datauri');
 
-// TODO: improve this with Object.assign & possibly other functions
-const renderEdit = (res, product, editing, errors, status = 200) => {
+const renderEdit = (res, editData, status = 200) => {
   res.status(status).render('admin/edit-product', {
-    pageTitle: (editing ? 'Edit Product' : 'Add Product'),
-    path: `/admin/${editing ? 'edit' : 'add'}-product`,
-    product,
-    editing,
-    errors,
+    ...editData,
+    pageTitle: `${editData.editing ? 'Edit' : 'Add'} Product`,
+    path: `/admin/${editData.editing ? 'edit' : 'add'}-product`,
   });
 };
 
@@ -29,7 +26,7 @@ const editProduct = async (req, res, product) => {
   const updatedProduct = setProduct(product, req);
   const errors = validationResult(req).array();
   if (errors.length > 0) {
-    renderEdit(res, updatedProduct, true, errors, 422);
+    renderEdit(res, { product: updatedProduct, editing: true, errors }, 422);
   } else {
     // Only delete existing image if a new one was provided
     if (req.file) {
@@ -43,7 +40,8 @@ const editProduct = async (req, res, product) => {
   }
 };
 
-exports.getAddProduct = (req, res) => renderEdit(res, {}, false, []);
+exports.getAddProduct = (_req, res) => renderEdit(res,
+  { product: {}, editing: false, errors: [] });
 
 exports.postAddProduct = async (req, res, next) => {
   const product = setProduct({ userId: req.user }, req);
@@ -52,7 +50,7 @@ exports.postAddProduct = async (req, res, next) => {
     errors.push({ msg: 'Attached file is not an image.' });
   }
   if (errors.length > 0) {
-    renderEdit(res, product, false, errors, 422);
+    renderEdit(res, { product, editing: false, errors }, 422);
   } else {
     try {
       const file = dataURI(req).content;
@@ -83,7 +81,7 @@ exports.getEditProduct = async (req, res, next) => {
   try {
     const product = await Product.findById(req.params.product);
     if (product) {
-      renderEdit(res, product, true, []);
+      renderEdit(res, { product, editing: true, errors: [] });
     } else {
       renderError({
         errmsg: 'Product could not be retrieved from the database. Please try again.',
