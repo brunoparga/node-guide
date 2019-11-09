@@ -13,6 +13,10 @@ const orderSchema = new mongoose.Schema({
       },
     },
   ],
+  total: {
+    type: Number,
+    required: true,
+  },
   user: {
     userId: {
       type: mongoose.Schema.Types.ObjectId,

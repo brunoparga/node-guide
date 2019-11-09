@@ -20,6 +20,10 @@ const calculatePages = (productCount, currentPage) => ({
   lastPage: Math.ceil(productCount / ITEMS_PER_PAGE),
 });
 
+const calculateTotal = (products) => products.reduce((subtotal, prod) => (
+  subtotal + (prod.quantity * prod.productId.price)
+), 0);
+
 exports.getIndex = async (req, res, next) => {
   try {
     const productCount = await Product.find().countDocuments();
@@ -117,9 +121,7 @@ exports.getCheckout = async (req, res, next) => {
       success_url: `${process.env.NODE_ENV === 'production' ? production : localhost}/checkout/success`,
       cancel_url: `${process.env.NODE_ENV === 'production' ? production : localhost}/checkout/cancel`,
     });
-    const total = products.reduce(
-      (subtotal, prod) => subtotal + prod.quantity * prod.productId.price, 0,
-    );
+    const total = calculateTotal(products);
     res.render('shop/checkout', {
       path: '/checkout',
       pageTitle: 'Checkout',
@@ -137,12 +139,14 @@ const createOrder = (user) => {
     quantity: product.quantity,
     product: { ...product.productId._doc },
   }));
+  const total = calculateTotal(products);
   return new Order({
     user: {
       email: user.email,
       userId: user,
     },
     products,
+    total,
   });
 };
 
@@ -174,14 +178,12 @@ exports.getOrders = async (req, res, next) => {
 const setCents = (value) => parseFloat(value).toFixed(2);
 
 const addProductsToPDF = (order, pdfDoc) => {
-  let total = 0;
   order.products.forEach((product) => {
     const { title, price } = product.product;
     const subtotal = product.quantity * price;
-    total += subtotal;
     pdfDoc.text(`${title}: ${product.quantity} x $${setCents(price)} = $${setCents(subtotal)}`);
   });
-  pdfDoc.text(`\nTOTAL: $${setCents(total)}`);
+  pdfDoc.text(`\nTOTAL: $${setCents(order.total)}`);
   return pdfDoc;
 };
 
