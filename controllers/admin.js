@@ -81,7 +81,7 @@ exports.getProducts = async (req, res, next) => {
 
 exports.getEditProduct = async (req, res, next) => {
   try {
-    const product = await Product.findById(req.params.productId);
+    const product = await Product.findById(req.params.product);
     if (product) {
       renderEdit(res, product, true, []);
     } else {

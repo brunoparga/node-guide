@@ -20,8 +20,8 @@ const calculatePages = (productCount, currentPage) => ({
   lastPage: Math.ceil(productCount / ITEMS_PER_PAGE),
 });
 
-const calculateTotal = (products) => products.reduce((subtotal, prod) => (
-  subtotal + (prod.quantity * prod.productId.price)
+const calculateTotal = (products) => products.reduce((subtotal, product) => (
+  subtotal + (product.quantity * product.product.price)
 ), 0);
 
 exports.getIndex = async (req, res, next) => {
@@ -59,7 +59,7 @@ exports.getProducts = async (req, res, next) => {
 
 exports.getProduct = async (req, res, next) => {
   try {
-    const product = await Product.findById(req.params.productId);
+    const product = await Product.findById(req.params.product);
     res.render('shop/product-detail', {
       product,
       pageTitle: product.title,
@@ -72,7 +72,7 @@ exports.getProduct = async (req, res, next) => {
 
 exports.postCart = async (req, res, next) => {
   try {
-    const product = await Product.findById(req.body.productId);
+    const product = await Product.findById(req.body.product);
     await req.user.addToCart(product);
     res.redirect('/cart');
   } catch (err) {
@@ -82,7 +82,7 @@ exports.postCart = async (req, res, next) => {
 
 exports.getCart = async (req, res, next) => {
   try {
-    const user = await req.user.populate('cart.items.productId').execPopulate();
+    const user = await req.user.populate('cart.items.product').execPopulate();
     res.render('shop/cart', {
       path: '/cart',
       pageTitle: 'Your cart',
@@ -95,7 +95,7 @@ exports.getCart = async (req, res, next) => {
 
 exports.postRemoveFromCart = async (req, res, next) => {
   try {
-    await req.user.removeFromCart(req.body.productId);
+    await req.user.removeFromCart(req.body.product);
     res.redirect('/cart');
   } catch (err) {
     renderError(err, next);
@@ -104,12 +104,12 @@ exports.postRemoveFromCart = async (req, res, next) => {
 
 exports.getCheckout = async (req, res, next) => {
   try {
-    const user = await req.user.populate('cart.items.productId').execPopulate();
+    const user = await req.user.populate('cart.items.product').execPopulate();
     const products = user.cart.items;
     const lineItems = products.map((p) => ({
-      name: p.productId.title,
-      description: p.productId.description,
-      amount: p.productId.price * 100,
+      name: p.product.title,
+      description: p.product.description,
+      amount: p.product.price * 100,
       currency: 'usd',
       quantity: p.quantity,
     }));
@@ -137,7 +137,7 @@ exports.getCheckout = async (req, res, next) => {
 const createOrder = (user) => {
   const products = user.cart.items.map((product) => ({
     quantity: product.quantity,
-    product: { ...product.productId._doc },
+    product: { ...product.product._doc },
   }));
   const total = calculateTotal(products);
   return new Order({
@@ -153,13 +153,9 @@ const createOrder = (user) => {
 exports.getCheckoutSuccess = async (req, res, next) => {
   // TODO: verify that user has really just placed an order
   try {
-    console.log('req.user //', req.user);
-    const user = await req.user.populate('cart.items.productId').execPopulate();
-    console.log('user //', user);
+    const user = await req.user.populate('cart.items.product').execPopulate();
     await createOrder(user).save();
-    console.log('saved user //', user);
     await req.user.clearCart();
-    console.log('cleared cart user //', user);
     res.redirect('/orders');
   } catch (err) {
     renderError(err, next);
