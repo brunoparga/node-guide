@@ -9,14 +9,13 @@
     <header class="centered">
       <h1>Welcome to SuperDuperStore!</h1>
       <p>We currently have <strong><%= productCount %></strong> offers.</p>
-      <p>Here is one of the most popular ones - <a href="/products">see them all</a>!</p>
     </header>
     <% if (product) { %>
+    <p class="centered">Here is one of the most popular ones - <a href="/products">see them all</a>!</p>
     <div class="grid">
       <%- include('../includes/card.ejs', { product, isAuthenticated, owner: false }) %>
     </div>
     <% } else { %>
-    <h1>No products here yet...</h1>
     <p>You can <a href="/login">log in</a> or <a href="/signup">sign up</a> and sell something!</p>
     <% } %>
   </main>

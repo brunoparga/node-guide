@@ -153,9 +153,13 @@ const createOrder = (user) => {
 exports.getCheckoutSuccess = async (req, res, next) => {
   // TODO: verify that user has really just placed an order
   try {
+    console.log('req.user //', req.user);
     const user = await req.user.populate('cart.items.productId').execPopulate();
+    console.log('user //', user);
     await createOrder(user).save();
+    console.log('saved user //', user);
     await req.user.clearCart();
+    console.log('cleared cart user //', user);
     res.redirect('/orders');
   } catch (err) {
     renderError(err, next);
