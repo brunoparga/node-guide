@@ -14,6 +14,7 @@ const session = require('./middleware/session');
 const setUser = require('./middleware/set-user');
 const setLocals = require('./middleware/set-locals');
 const routes = require('./routes/routes');
+const errorController = require('./controllers/error');
 const errorHandler = require('./middleware/error');
 
 const app = express();
@@ -31,6 +32,7 @@ app.use(flash());
 app.use(setUser);
 app.use(setLocals);
 app.use(routes);
+app.use(errorController.get404);
 app.use(errorHandler);
 
 mongoose.connect(process.env.MONGODB_URI,
