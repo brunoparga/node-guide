@@ -5,124 +5,108 @@ const mailer = require('@sendgrid/mail');
 const { validationResult } = require('express-validator');
 
 const User = require('../models/user');
+const render = require('../services/auth-render');
 const renderError = require('../services/render-error');
 
 mailer.setApiKey(process.env.SENDGRID_API_KEY);
 
-const SIGNUP = {
-  view: 'auth/signup',
-  path: '/signup',
-  pageTitle: 'Sign Up',
-};
-
-const LOGIN = {
-  view: 'auth/login',
-  path: '/login',
-  pageTitle: 'Log In',
-};
-
-const RESET = {
-  view: 'auth/reset',
-  path: '/reset',
-  pageTitle: 'Reset password',
-};
-
-const render = (page, res, errorMessage, inputEmail, status = 200) => {
-  const { path, pageTitle } = page;
-  return res.status(status).render(page.view, {
-    path, pageTitle, errorMessage, inputEmail,
-  });
-};
-
-const validateSignup = (req, res, login = true) => {
+const validateCredentials = (req, res, view) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     let inputEmail;
     if (errors.array().every((error) => error.param !== 'email')) {
       inputEmail = req.body.email;
     }
-    render((login ? LOGIN : SIGNUP), res, errors.array()[0].msg, inputEmail, 422);
+    render(view, res, errors.array(), inputEmail, 422);
     return false;
   }
   return true;
 };
 
-exports.getSignup = (req, res) => render(SIGNUP, res, req.flash('error')[0], '');
+const signup = async (email, password) => {
+  const hashedPassword = await bcrypt.hash(password, 12);
+  await new User({ email, password: hashedPassword, cart: { items: [] } }).save();
+  await mailer.send({
+    to: email,
+    from: 'welcome@superstore.com',
+    subject: 'Welcome to the Amazon-Killer!',
+    html: '<h1>Hi there!!!!</h1>',
+  });
+};
+
+exports.getSignup = (req, res) => render('signup', res, req.flash('error'), '');
 
 exports.postSignup = async (req, res, next) => {
-  const passedValidation = validateSignup(req, res, false);
+  const passedValidation = validateCredentials(req, res, 'signup');
   if (!passedValidation) {
     return;
   }
-  const { email } = req.body;
-  let { password } = req.body;
+  const { email, password } = req.body;
   try {
-    password = await bcrypt.hash(password, 12);
-    await new User({ email, password, cart: { items: [] } }).save();
-    await mailer.send({
-      to: email,
-      from: 'welcome@superstore.com',
-      subject: 'Welcome to the Amazon-Killer!',
-      html: '<h1>Hi there!!!!</h1>',
-    });
+    await signup(email, password);
     res.redirect('/login');
   } catch (err) {
     renderError(err, next);
   }
 };
 
-exports.getLogin = (req, res) => render(LOGIN, res, req.flash('error')[0], '');
+exports.getLogin = (req, res) => render('login', res, req.flash('error'), '');
 
 exports.postLogin = async (req, res, next) => {
-  const passedValidation = validateSignup(req, res, false);
+  const passedValidation = validateCredentials(req, res, 'login');
   if (!passedValidation) {
     return;
   }
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ email });
-    if (user && await bcrypt.compare(password, user.password)) {
+    const match = await bcrypt.compare(password, user.password);
+    if (user && match) {
       req.session.user = user;
       req.session.save(() => res.redirect('/'));
     } else {
-      render(LOGIN, res, 'Invalid email or password.', email, 422);
+      render('login', res, [{ msg: 'Invalid email or password.' }], email, 422);
     }
   } catch (err) {
     renderError(err, next);
   }
 };
 
-exports.getReset = (req, res) => render(RESET, res, req.flash('error')[0], '');
+exports.getReset = (req, res) => render('reset', res, req.flash('error'), '');
 
 exports.postReset = (req, res, next) => {
   crypto.randomBytes(32, async (error, buffer) => {
     if (error) {
-      return render(RESET, res, 'There was a server error; please try again.', '');
+      render('reset', res, [
+        { msg: 'There was a server error; please try again.' },
+      ], '');
+      return;
     }
     const token = buffer.toString('hex');
     try {
       const user = await User.findOne({ email: req.body.email });
       if (!user) {
-        return render(RESET, res, 'Email not found.', req.body.email, 422);
+        render('reset', res, [{ msg: 'Email not found.' }], req.body.email, 422);
+        return;
       }
       user.resetToken = token;
       user.resetTokenExpiration = Date.now() + 3600000;
       await user.save();
       res.redirect('/');
-      return mailer.send({
+      mailer.send({
         to: req.body.email,
-        from: 'recovery@superstore.com',
+        from: 'recovery@superduperstore.com',
         subject: 'Recover your password',
         html: `
             <p>Someone (likely you) requested a password reset for this email.</p>
-            <p>Click <a href="http://localhost:3000/new-password/${token}">this link</a> to reset your password:</p>
+            <p>Click <a href="https://superduperstore.herokuapp.com/new-password/${token}">this link</a> to reset your password.</p>
 
             Cheers,<br>
-            SuperStore.com
+            SuperDuperStore.com
           `,
       });
     } catch (err) {
-      return renderError(err, next);
+      renderError(err, next);
     }
   });
 };
@@ -138,7 +122,7 @@ exports.getNewPassword = async (req, res, next) => {
       res.render('auth/new-password', {
         path: '/new-password',
         pageTitle: 'New Password',
-        errorMessage: req.flash('error')[0],
+        errors: req.flash('error'),
         _id: user._id.toString(),
         resetToken: token,
       });
@@ -157,8 +141,8 @@ exports.postNewPassword = async (req, res, next) => {
     _id, newPassword, confirmPassword, resetToken,
   } = req.body;
   if (newPassword !== confirmPassword) {
-    req.flash('error', "The passwords don't match.");
-    return res.redirect('/signup');
+    req.flash('error', { msg: "The passwords don't match." });
+    return res.redirect(`/new-password/${resetToken}`);
   }
   try {
     const user = await User

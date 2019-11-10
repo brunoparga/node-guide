@@ -7,13 +7,7 @@
   <%- include('../includes/navigation.ejs') %>
 
   <main>
-    <!-- TODO: replace this with includes/errors.ejs -->
-    <!-- (requires replacing errorMessage with array of errors) -->
-    <% if (errorMessage) { %>
-      <div class="user-message user-message--error">
-        <%= errorMessage %>
-      </div>
-    <% } %>
+    <%- include('../includes/errors.ejs', { errors }) %>
     <form class="login-form" action="/login" method="POST">
       <div class="form-control">
         <label for="email">E-mail</label>
