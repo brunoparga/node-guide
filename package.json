@@ -4,7 +4,7 @@
   "description": "Max Schwarzmueller's NodeJS Complete Guide",
   "main": "app.js",
   "engines": {
-    "node": "12.13.0"
+    "node": "12.20.1"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
